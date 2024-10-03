@@ -39,26 +39,26 @@ impl DiceRollCommand {
         let mut rng = rand::thread_rng();
         let mut current_dice_count = 0;
         let mut individual_results: Vec<InitialDiceRollResult> = vec![];
-
+        let max_range = self.dice_size + 1;
         while current_dice_count != self.dice_count {
             let mut discarded_rolls: Vec<u32> = vec![];
             let mut exploded_rolls: Vec<u32> = vec![];
 
-            let roll_result = rng.gen_range(1..self.dice_size + 1);
+            let roll_result = rng.gen_range(1..max_range);
             let mut final_roll: u32 = roll_result;
             match self.re_roll {
                 None => final_roll = roll_result,
                 Some(target) => {
                     let needs_re_roll = self.needs_re_roll(&roll_result, &target);
                     if needs_re_roll && !self.re_roll_recursively {
-                        let second_result = rng.gen_range(1..self.dice_size + 1);
+                        let second_result = rng.gen_range(1..max_range);
                         discarded_rolls.push(roll_result);
                         final_roll = second_result;
                     } else if needs_re_roll && self.re_roll_recursively {
-                        let mut new_roll = rng.gen_range(1..self.dice_size + 1);
+                        let mut new_roll = rng.gen_range(1..max_range);
                         while self.needs_re_roll(&new_roll, &target) {
                             discarded_rolls.push(new_roll);
-                            new_roll = rng.gen_range(1..self.dice_size + 1);
+                            new_roll = rng.gen_range(1..max_range);
                         }
                         final_roll = new_roll;
                     } else if !needs_re_roll {
@@ -72,13 +72,13 @@ impl DiceRollCommand {
                 Some(target) => {
                     let needs_explosion = self.needs_explosion(&final_roll, &target);
                     if needs_explosion && self.explode_once {
-                        exploded_rolls.push(rng.gen_range(1..self.dice_size + 1));
+                        exploded_rolls.push(rng.gen_range(1..max_range));
                     }
                     if needs_explosion && !self.explode_once {
-                        let mut exploded_roll = rng.gen_range(1..self.dice_size + 1);
+                        let mut exploded_roll = rng.gen_range(1..max_range);
                         exploded_rolls.push(exploded_roll);
                         while self.needs_explosion(&exploded_roll, &target) {
-                            exploded_roll = rng.gen_range(1..self.dice_size + 1);
+                            exploded_roll = rng.gen_range(1..max_range);
                             exploded_rolls.push(exploded_roll);
                         }
                     }
