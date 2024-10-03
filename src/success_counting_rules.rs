@@ -155,19 +155,18 @@ impl SuccessCountingRules {
                 }
             }
 
-            let cloned = roll.clone();
 
             success_counting_rules_applied.push(SuccessCountingRulesApplied::new(
-                cloned.group,
-                cloned.sign,
-                cloned.roll_number,
-                cloned.dice_size,
-                cloned.final_roll,
-                cloned.discarded_rolls,
-                cloned.exploded_rolls,
-                cloned.subtotal,
-                cloned.kept,
-                cloned.replaced_roll,
+                roll.group,
+                roll.sign,
+                roll.roll_number,
+                roll.dice_size,
+                roll.final_roll,
+                roll.discarded_rolls.clone(),
+                roll.exploded_rolls.clone(),
+                roll.subtotal,
+                roll.kept,
+                roll.replaced_roll,
                 success,
                 failure,
                 subtracted,
