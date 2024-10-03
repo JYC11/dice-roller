@@ -37,13 +37,12 @@ impl SuccessCountingAfterResultKeeping {
     ) -> Self {
         let kept_successes = rolls
             .iter()
-            .filter(|x| { x.kept })
-            .filter(
-                |x| {
-                    (x.success == Some(true) || x.failure == Some(false)) ||
-                        (x.success.is_none() && x.failure.is_none())
-                }
-            ).collect::<Vec<&SuccessCountingRulesApplied>>();
+            .filter(|x| x.kept)
+            .filter(|x| {
+                (x.success == Some(true) || x.failure == Some(false))
+                    || (x.success.is_none() && x.failure.is_none())
+            })
+            .collect::<Vec<&SuccessCountingRulesApplied>>();
 
         let mut grouped_subtotals: HashMap<i32, i32> = HashMap::new();
 
@@ -57,10 +56,10 @@ impl SuccessCountingAfterResultKeeping {
             }
         }
 
-        let final_modifier = initial_modifier -
-            deductions_from_failure as i32 -
-            subtractions_from_failure as i32 -
-            margin_of_success as i32;
+        let final_modifier = initial_modifier
+            - deductions_from_failure as i32
+            - subtractions_from_failure as i32
+            - margin_of_success as i32;
 
         let total_before_modifier = grouped_subtotals.values().sum::<i32>();
         let total = total_before_modifier + final_modifier;
@@ -87,10 +86,8 @@ impl SuccessCountingAfterResultKeeping {
 
 impl TableDisplay for SuccessCountingAfterResultKeeping {
     fn display(mut self) {
-        self.rolls.sort_by(
-            |a, b| a.group.cmp(&b.group)
-        );
-        self.rolls.iter().for_each(|x| { x.clone().display() });
+        self.rolls.sort_by(|a, b| a.group.cmp(&b.group));
+        self.rolls.iter().for_each(|x| x.clone().display());
 
         let mut header = vec![
             Cell::new("Total Before Modifier"),
@@ -144,7 +141,8 @@ impl TableDisplay for SuccessCountingAfterResultKeeping {
         }
 
         let mut main_result = Table::new();
-        main_result.load_preset(UTF8_FULL)
+        main_result
+            .load_preset(UTF8_FULL)
             .set_content_arrangement(ContentArrangement::Dynamic)
             .set_width(160)
             .set_header(header)
@@ -163,7 +161,8 @@ impl TableDisplay for SuccessCountingAfterResultKeeping {
                 }
             }
             let mut group_subtotals = Table::new();
-            group_subtotals.load_preset(UTF8_FULL)
+            group_subtotals
+                .load_preset(UTF8_FULL)
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .set_width(160)
                 .set_header(group_headers)

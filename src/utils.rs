@@ -1,4 +1,6 @@
-use crate::builders::{build_dice_roll_commands, build_result_keeping_rules, build_success_counting_rules};
+use crate::builders::{
+    build_dice_roll_commands, build_result_keeping_rules, build_success_counting_rules,
+};
 use crate::enums::Operator;
 use crate::roll_command::InitialDiceRollResult;
 use crate::traits::TableDisplay;
@@ -6,7 +8,13 @@ use regex::Regex;
 
 pub fn yn_tf_to_bool(value: String) -> bool {
     let lowercased = value.to_lowercase();
-    if lowercased == "y" || lowercased == "t" { true } else if lowercased == "n" || lowercased == "f" { false } else { unreachable!() }
+    if lowercased == "y" || lowercased == "t" {
+        true
+    } else if lowercased == "n" || lowercased == "f" {
+        false
+    } else {
+        unreachable!()
+    }
 }
 
 pub fn parse_operator(input: &str) -> Option<Operator> {
@@ -31,33 +39,19 @@ pub fn parse_operator(input: &str) -> Option<Operator> {
 
 pub fn parse_number(input: &str) -> u32 {
     let number_part = Regex::new(r"\d+").unwrap();
-    let number = number_part.find(input)
-        .unwrap().as_str().parse().unwrap();
+    let number = number_part.find(input).unwrap().as_str().parse().unwrap();
     number
 }
 
 pub fn _sample_for_testing() {
-    let res = build_dice_roll_commands(
-        "10d20".parse().unwrap(),
-        None,
-        None,
-        None,
-        None,
-    );
+    let res = build_dice_roll_commands("10d20".parse().unwrap(), None, None, None, None);
     let commands = res.0;
     let modifier = res.1;
     let mut initial_results: Vec<InitialDiceRollResult> = vec![];
     for command in commands {
         initial_results.append(&mut command.roll_dice())
     }
-    let result_keeping_rules = build_result_keeping_rules(
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-    );
+    let result_keeping_rules = build_result_keeping_rules(None, None, None, None, None, None);
     let success_keeping_rules = build_success_counting_rules(
         None,
         Some("lte10".parse().unwrap()),

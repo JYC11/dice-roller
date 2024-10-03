@@ -1,4 +1,6 @@
-use crate::builders::{build_dice_roll_commands, build_result_keeping_rules, build_success_counting_rules};
+use crate::builders::{
+    build_dice_roll_commands, build_result_keeping_rules, build_success_counting_rules,
+};
 use crate::roll_command::InitialDiceRollResult;
 use crate::traits::TableDisplay;
 use clap::Parser;
@@ -8,7 +10,7 @@ use regex::Regex;
 #[command(
     version = "v0.0.1",
     about = "rolls dice",
-    long_about = "this rolls dice, whaddaya want more bub",
+    long_about = "this rolls dice, whaddaya want more bub"
 )]
 #[command(next_line_help = true)]
 pub struct Cli {
@@ -40,7 +42,7 @@ pub struct Cli {
             help = "example: dice-roller -d 2d6+9 -r lte4 --rr"
     )
     ]
-    re_roll_recursively: Option<String>,  // y/n/t/f or Y/N/T/F
+    re_roll_recursively: Option<String>, // y/n/t/f or Y/N/T/F
 
     #[
     arg(
@@ -157,7 +159,7 @@ pub struct Cli {
             help = "example: dice-roller -d 10d20 --even"
     )
     ]
-    even: Option<String>,  // y/n/t/f or Y/N/T/F
+    even: Option<String>, // y/n/t/f or Y/N/T/F
 
     #[
     arg(
@@ -169,7 +171,7 @@ pub struct Cli {
             help = "example: dice-roller -d 10d20 --odd"
     )
     ]
-    odd: Option<String>,  // y/n/t/f or Y/N/T/F
+    odd: Option<String>, // y/n/t/f or Y/N/T/F
 
     #[
     arg(
@@ -207,7 +209,11 @@ fn validate_dice_roll(s: &str) -> Result<String, String> {
     if dice_regex.is_match(s) {
         Ok(s.parse::<String>().unwrap())
     } else {
-        Err("Incorrect dice roll format. Correct examples: 1d20+5, 2d6, 1d4-1".parse().unwrap())
+        Err(
+            "Incorrect dice roll format. Correct examples: 1d20+5, 2d6, 1d4-1"
+                .parse()
+                .unwrap(),
+        )
     }
 }
 
@@ -216,16 +222,17 @@ fn validate_comparison(s: &str) -> Result<String, String> {
     if comparison_regex.is_match(s) {
         Ok(s.parse::<String>().unwrap())
     } else {
-        Err("Incorrect number comparison format. Correct examples: eq10, lt10, gt10, gte10, lte10".parse().unwrap())
+        Err(
+            "Incorrect number comparison format. Correct examples: eq10, lt10, gt10, gte10, lte10"
+                .parse()
+                .unwrap(),
+        )
     }
 }
 
 fn validate_yn_tf(s: &str) -> Result<String, String> {
     let lowercased = s.to_lowercase();
-    if lowercased == "y" ||
-        lowercased == "n" ||
-        lowercased == "t" ||
-        lowercased == "f" {
+    if lowercased == "y" || lowercased == "n" || lowercased == "t" || lowercased == "f" {
         Ok(s.parse::<String>().unwrap())
     } else {
         Err("Only Y/N/T/F or y/n/t/f is allowed".parse().unwrap())
@@ -236,7 +243,9 @@ pub fn cli_app() {
     let cli = Cli::parse();
 
     match cli.dice_roll {
-        None => { println!("please enter a dice roll or enter -h or --help for details and examples") }
+        None => {
+            println!("please enter a dice roll or enter -h or --help for details and examples")
+        }
         Some(dice_roll) => {
             let res = build_dice_roll_commands(
                 dice_roll,
@@ -269,7 +278,8 @@ pub fn cli_app() {
                 initial_results.append(&mut command.roll_dice())
             }
             let mut secondary_results = result_keeping_rules.process_results(&mut initial_results);
-            let final_results = success_keeping_rules.count_successes(&mut secondary_results, modifier);
+            let final_results =
+                success_keeping_rules.count_successes(&mut secondary_results, modifier);
             final_results.display()
         }
     }

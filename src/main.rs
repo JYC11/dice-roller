@@ -1,15 +1,14 @@
 extern crate core;
 
-mod roll_result;
-mod roll_command;
+mod builders;
+mod cli;
 mod enums;
 mod result_keeping_rules;
+mod roll_command;
+mod roll_result;
 mod success_counting_rules;
 mod traits;
-mod cli;
 mod utils;
-mod builders;
-
 
 fn main() {
     cli::cli_app();

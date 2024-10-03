@@ -6,4 +6,3 @@ pub enum Operator {
     Lt(u32),
     Lte(u32),
 }
-

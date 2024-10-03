@@ -11,7 +11,7 @@ pub struct SuccessCountingRules {
     count_even: bool,
     count_odd: bool,
     deduct_failure: Option<u32>, // deduct each by failure n
-    subtract_failure: bool, // deduct the entire dice roll
+    subtract_failure: bool,      // deduct the entire dice roll
     margin_of_success: u32,
 }
 
@@ -41,7 +41,9 @@ impl SuccessCountingRules {
     }
 
     pub fn count_successes(
-        &self, result_keeping_rules_applied: &mut [ResultKeepingRulesApplied], modifier: i32,
+        &self,
+        result_keeping_rules_applied: &mut [ResultKeepingRulesApplied],
+        modifier: i32,
     ) -> SuccessCountingAfterResultKeeping {
         let mut success_counting_rules_applied: Vec<SuccessCountingRulesApplied> = vec![];
         let mut evens = 0;
@@ -59,37 +61,45 @@ impl SuccessCountingRules {
 
             if roll.kept {
                 success = match self.count_success {
-                    None => { None }
-                    Some(operator) => {
-                        match operator {
-                            Operator::Eq(target) => { Some(roll.final_roll == target) }
-                            Operator::Gt(target) => { Some(roll.final_roll > target) }
-                            Operator::Gte(target) => { Some(roll.final_roll >= target) }
-                            Operator::Lt(target) => { Some(roll.final_roll < target) }
-                            Operator::Lte(target) => { Some(roll.final_roll <= target) }
-                        }
-                    }
+                    None => None,
+                    Some(operator) => match operator {
+                        Operator::Eq(target) => Some(roll.final_roll == target),
+                        Operator::Gt(target) => Some(roll.final_roll > target),
+                        Operator::Gte(target) => Some(roll.final_roll >= target),
+                        Operator::Lt(target) => Some(roll.final_roll < target),
+                        Operator::Lte(target) => Some(roll.final_roll <= target),
+                    },
                 };
                 match success {
                     None => {}
-                    Some(val) => { if val { successes += 1 } else { failures += 1 } }
+                    Some(val) => {
+                        if val {
+                            successes += 1
+                        } else {
+                            failures += 1
+                        }
+                    }
                 }
 
                 failure = match self.count_failure {
-                    None => { None }
-                    Some(operator) => {
-                        match operator {
-                            Operator::Eq(target) => { Some(roll.final_roll == target) }
-                            Operator::Gt(target) => { Some(roll.final_roll > target) }
-                            Operator::Gte(target) => { Some(roll.final_roll >= target) }
-                            Operator::Lt(target) => { Some(roll.final_roll < target) }
-                            Operator::Lte(target) => { Some(roll.final_roll <= target) }
-                        }
-                    }
+                    None => None,
+                    Some(operator) => match operator {
+                        Operator::Eq(target) => Some(roll.final_roll == target),
+                        Operator::Gt(target) => Some(roll.final_roll > target),
+                        Operator::Gte(target) => Some(roll.final_roll >= target),
+                        Operator::Lt(target) => Some(roll.final_roll < target),
+                        Operator::Lte(target) => Some(roll.final_roll <= target),
+                    },
                 };
                 match failure {
                     None => {}
-                    Some(val) => { if !val { successes += 1 } else { failures += 1 } }
+                    Some(val) => {
+                        if !val {
+                            successes += 1
+                        } else {
+                            failures += 1
+                        }
+                    }
                 }
 
                 if self.subtract_failure {
@@ -137,30 +147,32 @@ impl SuccessCountingRules {
                     }
                 }
 
-                if self.count_even && roll.final_roll % 2 == 0 { evens += 1 }
-                if self.count_odd && roll.final_roll % 2 != 0 { odds += 1 }
+                if self.count_even && roll.final_roll % 2 == 0 {
+                    evens += 1
+                }
+                if self.count_odd && roll.final_roll % 2 != 0 {
+                    odds += 1
+                }
             }
 
             let cloned = roll.clone();
 
-            success_counting_rules_applied.push(
-                SuccessCountingRulesApplied::new(
-                    cloned.group,
-                    cloned.sign,
-                    cloned.roll_number,
-                    cloned.dice_size,
-                    cloned.final_roll,
-                    cloned.discarded_rolls,
-                    cloned.exploded_rolls,
-                    cloned.subtotal,
-                    cloned.kept,
-                    cloned.replaced_roll,
-                    success,
-                    failure,
-                    subtracted,
-                    deduction,
-                )
-            )
+            success_counting_rules_applied.push(SuccessCountingRulesApplied::new(
+                cloned.group,
+                cloned.sign,
+                cloned.roll_number,
+                cloned.dice_size,
+                cloned.final_roll,
+                cloned.discarded_rolls,
+                cloned.exploded_rolls,
+                cloned.subtotal,
+                cloned.kept,
+                cloned.replaced_roll,
+                success,
+                failure,
+                subtracted,
+                deduction,
+            ))
         }
         success_counting_rules_applied.sort_by(|a, b| a.roll_number.cmp(&b.roll_number));
 
@@ -276,7 +288,10 @@ impl TableDisplay for SuccessCountingRulesApplied {
             None => {}
             Some(replaced_roll) => {
                 header.push(Cell::new("Replaced"));
-                row.push(Cell::new(format!("{} has been replaced with {}", replaced_roll, self.final_roll)));
+                row.push(Cell::new(format!(
+                    "{} has been replaced with {}",
+                    replaced_roll, self.final_roll
+                )));
             }
         }
 
@@ -303,7 +318,8 @@ impl TableDisplay for SuccessCountingRulesApplied {
         header.push(Cell::new("Subtotal"));
         row.push(Cell::new(self.subtotal));
 
-        table1.load_preset(UTF8_FULL)
+        table1
+            .load_preset(UTF8_FULL)
             .set_content_arrangement(ContentArrangement::Dynamic)
             .set_width(160)
             .set_header(header)

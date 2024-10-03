@@ -47,7 +47,7 @@ impl DiceRollCommand {
             let roll_result = rng.gen_range(1..self.dice_size + 1);
             let mut final_roll: u32 = roll_result;
             match self.re_roll {
-                None => { final_roll = roll_result }
+                None => final_roll = roll_result,
                 Some(target) => {
                     let needs_re_roll = self.needs_re_roll(&roll_result, &target);
                     if needs_re_roll && !self.re_roll_recursively {
@@ -86,17 +86,15 @@ impl DiceRollCommand {
                 }
             }
 
-            individual_results.push(
-                InitialDiceRollResult::new(
-                    self.group,
-                    self.sign,
-                    current_dice_count + 1,
-                    self.dice_size,
-                    final_roll,
-                    discarded_rolls,
-                    exploded_rolls,
-                )
-            );
+            individual_results.push(InitialDiceRollResult::new(
+                self.group,
+                self.sign,
+                current_dice_count + 1,
+                self.dice_size,
+                final_roll,
+                discarded_rolls,
+                exploded_rolls,
+            ));
             current_dice_count += 1
         }
 
@@ -105,21 +103,21 @@ impl DiceRollCommand {
 
     fn needs_re_roll(&self, source: &u32, target: &Operator) -> bool {
         match target {
-            Operator::Eq(target) => { source == target }
-            Operator::Gt(target) => { source > target }
-            Operator::Gte(target) => { source >= target }
-            Operator::Lt(target) => { source < target }
-            Operator::Lte(target) => { source <= target }
+            Operator::Eq(target) => source == target,
+            Operator::Gt(target) => source > target,
+            Operator::Gte(target) => source >= target,
+            Operator::Lt(target) => source < target,
+            Operator::Lte(target) => source <= target,
         }
     }
 
     fn needs_explosion(&self, source: &u32, target: &Operator) -> bool {
         match target {
-            Operator::Eq(target) => { source == target }
-            Operator::Gt(target) => { source > target }
-            Operator::Gte(target) => { source >= target }
-            Operator::Lt(target) => { source < target }
-            Operator::Lte(target) => { source <= target }
+            Operator::Eq(target) => source == target,
+            Operator::Gt(target) => source > target,
+            Operator::Gte(target) => source >= target,
+            Operator::Lt(target) => source < target,
+            Operator::Lte(target) => source <= target,
         }
     }
 }
@@ -146,11 +144,16 @@ impl InitialDiceRollResult {
         discarded_rolls: Vec<u32>,
         exploded_rolls: Vec<u32>,
     ) -> InitialDiceRollResult {
-        let subtotal = exploded_rolls
-            .iter()
-            .map(|x| { *x as i32 })
-            .sum::<i32>() + final_roll as i32;
-        Self { group, sign, roll_number, dice_size, final_roll, discarded_rolls, exploded_rolls, subtotal }
+        let subtotal = exploded_rolls.iter().map(|x| *x as i32).sum::<i32>() + final_roll as i32;
+        Self {
+            group,
+            sign,
+            roll_number,
+            dice_size,
+            final_roll,
+            discarded_rolls,
+            exploded_rolls,
+            subtotal,
+        }
     }
 }
-

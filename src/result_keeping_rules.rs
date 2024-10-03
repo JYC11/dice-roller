@@ -22,7 +22,13 @@ impl ResultKeepingRules {
         be_replaced_with: Option<u32>,
         min: bool,
     ) -> Self {
-        Self { keep, high, keep_or_drop_count, be_replaced_with, min }
+        Self {
+            keep,
+            high,
+            keep_or_drop_count,
+            be_replaced_with,
+            min,
+        }
     }
 
     pub fn process_results(
@@ -87,24 +93,23 @@ impl ResultKeepingRules {
                 Some(to_be_replaced_with) => {
                     replaced_roll = Some(cloned.final_roll);
                     new_final_roll = to_be_replaced_with;
-                    new_subtotal = cloned.subtotal - cloned.final_roll as i32 + to_be_replaced_with as i32;
+                    new_subtotal =
+                        cloned.subtotal - cloned.final_roll as i32 + to_be_replaced_with as i32;
                 }
             }
 
-            processed_results.push(
-                ResultKeepingRulesApplied::new(
-                    cloned.group,
-                    cloned.sign,
-                    cloned.roll_number,
-                    cloned.dice_size,
-                    new_final_roll,
-                    cloned.discarded_rolls,
-                    cloned.exploded_rolls,
-                    new_subtotal,
-                    should_keep,
-                    replaced_roll,
-                )
-            )
+            processed_results.push(ResultKeepingRulesApplied::new(
+                cloned.group,
+                cloned.sign,
+                cloned.roll_number,
+                cloned.dice_size,
+                new_final_roll,
+                cloned.discarded_rolls,
+                cloned.exploded_rolls,
+                new_subtotal,
+                should_keep,
+                replaced_roll,
+            ))
         }
         // will be sorted descending by roll_number, biggest last
 

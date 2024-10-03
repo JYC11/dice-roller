@@ -5,7 +5,6 @@ use crate::success_counting_rules::SuccessCountingRules;
 use crate::utils::{parse_number, parse_operator, yn_tf_to_bool};
 use regex::Regex;
 
-
 pub fn parse_dice(dice_expr: &str) -> (u32, u32) {
     let re = Regex::new(r"(\d+)d(\d+)").unwrap();
     if let Some(caps) = re.captures(dice_expr) {
@@ -26,7 +25,7 @@ pub fn build_dice_roll_commands(
 ) -> (Vec<DiceRollCommand>, i32) {
     let mut re_roll_number = 0;
     let re_roll_input = match re_roll {
-        None => { None }
+        None => None,
         Some(input) => {
             re_roll_number = parse_number(&input);
             parse_operator(&input)
@@ -34,13 +33,13 @@ pub fn build_dice_roll_commands(
     };
 
     let re_roll_recursively_input = match re_roll_recursively {
-        None => { false }
-        Some(value) => { yn_tf_to_bool(value) }
+        None => false,
+        Some(value) => yn_tf_to_bool(value),
     };
 
     let mut explode_number = 0;
     let explode_input = match explode {
-        None => { None }
+        None => None,
         Some(input) => {
             explode_number = parse_number(&input);
             parse_operator(&input)
@@ -48,8 +47,8 @@ pub fn build_dice_roll_commands(
     };
 
     let explode_once_input = match explode_once {
-        None => { false }
-        Some(value) => { yn_tf_to_bool(value) }
+        None => false,
+        Some(value) => yn_tf_to_bool(value),
     };
 
     // This regex matches both dice expressions and numeric modifiers
@@ -69,18 +68,16 @@ pub fn build_dice_roll_commands(
             if explode_number > count_and_sides.1 {
                 panic!("explode number exceeds maximum dice size")
             }
-            result.push(
-                DiceRollCommand::new(
-                    group,
-                    sign,
-                    count_and_sides.0,
-                    count_and_sides.1,
-                    re_roll_input,
-                    re_roll_recursively_input,
-                    explode_input,
-                    explode_once_input,
-                )
-            );
+            result.push(DiceRollCommand::new(
+                group,
+                sign,
+                count_and_sides.0,
+                count_and_sides.1,
+                re_roll_input,
+                re_roll_recursively_input,
+                explode_input,
+                explode_once_input,
+            ));
             group += 1;
         } else {
             modifier = token.parse::<i32>().unwrap()
@@ -88,7 +85,6 @@ pub fn build_dice_roll_commands(
     }
     (result, modifier)
 }
-
 
 pub fn build_result_keeping_rules(
     keep_high: Option<u32>,
@@ -103,13 +99,19 @@ pub fn build_result_keeping_rules(
         keep_low.is_some(),
         drop_high.is_some(),
         drop_low.is_some(),
-    ].iter().filter(|&&x| x).count();
+    ]
+    .iter()
+    .filter(|&&x| x)
+    .count();
     assert!(
         count_keeping_options <= 1,
         "Only one of keep_high, keep_low, drop_high, drop_low can be used"
     );
 
-    let count_min_max_options = [max.is_some(), min.is_some()].iter().filter(|&&x| x).count();
+    let count_min_max_options = [max.is_some(), min.is_some()]
+        .iter()
+        .filter(|&&x| x)
+        .count();
     assert!(
         count_min_max_options <= 1,
         "Only one of max or min can be used"
@@ -145,7 +147,10 @@ pub fn build_result_keeping_rules(
                 keep_input = false;
                 high_input = false;
                 keep_or_drop_count_input = value;
-            } else if rule == "none" {} else { unreachable!() }
+            } else if rule == "none" {
+            } else {
+                unreachable!()
+            }
         }
     }
 
@@ -166,7 +171,10 @@ pub fn build_result_keeping_rules(
             } else if rule == "max" {
                 be_replaced_with_input = Some(value);
                 min_input = false;
-            } else if rule == "none" {} else { unreachable!() }
+            } else if rule == "none" {
+            } else {
+                unreachable!()
+            }
         }
     }
 
@@ -191,8 +199,11 @@ pub fn build_success_counting_rules(
     let count_success_or_failure_options = [
         count_success.is_some(),
         count_failure.is_some(),
-        subtract_failures.is_some()
-    ].iter().filter(|&&x| x).count();
+        subtract_failures.is_some(),
+    ]
+    .iter()
+    .filter(|&&x| x)
+    .count();
     assert!(
         count_success_or_failure_options <= 1,
         "Only one of count_success, subtract_failures or count_failure can be used"
@@ -216,18 +227,21 @@ pub fn build_success_counting_rules(
             } else if rule == "subtract_failure" {
                 count_failure_input = parse_operator(&value);
                 subtract_failures_input = true;
-            } else if rule == "none" {} else { unreachable!(); }
+            } else if rule == "none" {
+            } else {
+                unreachable!();
+            }
         }
     }
 
     let even_input = match even {
-        None => { false }
-        Some(value) => { yn_tf_to_bool(value) }
+        None => false,
+        Some(value) => yn_tf_to_bool(value),
     };
 
     let odd_input = match odd {
-        None => { false }
-        Some(value) => { yn_tf_to_bool(value) }
+        None => false,
+        Some(value) => yn_tf_to_bool(value),
     };
 
     SuccessCountingRules::new(
