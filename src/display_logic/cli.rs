@@ -219,7 +219,7 @@ fn validate_dice_roll(s: &str) -> Result<String, String> {
 
 fn validate_comparison(s: &str) -> Result<String, String> {
     let comparison_regex = Regex::new(r"\b(eq|lt|lte|gt|gte)\d+\b").unwrap();
-    if comparison_regex.is_match(s) {
+    if comparison_regex.is_match(&s.to_lowercase()) {
         Ok(s.parse::<String>().unwrap())
     } else {
         Err(

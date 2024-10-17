@@ -18,16 +18,16 @@ pub fn yn_tf_to_bool(value: String) -> bool {
 
 pub fn parse_operator(input: &str) -> Option<Operator> {
     let number = parse_number(input);
-
-    let res = if input.contains("eq") {
+    let lowercased = input.to_lowercase();
+    let res = if lowercased.contains("eq") {
         Operator::Eq(number)
-    } else if input.contains("lte") {
+    } else if lowercased.contains("lte") {
         Operator::Lte(number)
-    } else if input.contains("gte") {
+    } else if lowercased.contains("gte") {
         Operator::Gte(number)
-    } else if input.contains("lt") {
+    } else if lowercased.contains("lt") {
         Operator::Lt(number)
-    } else if input.contains("gt") {
+    } else if lowercased.contains("gt") {
         Operator::Gt(number)
     } else {
         unreachable!()

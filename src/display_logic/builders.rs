@@ -56,7 +56,7 @@ pub fn build_dice_roll_commands(
     let mut result = vec![];
     let mut modifier: i32 = 0;
     let mut group: i32 = 1;
-    for caps in re.captures_iter(&dice_roll) {
+    for caps in re.captures_iter(&dice_roll.to_lowercase()) {
         let token = caps.get(0).unwrap().as_str();
         if token.contains('d') {
             let sign = if token.starts_with('-') { -1 } else { 1 };
