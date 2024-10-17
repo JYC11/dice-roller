@@ -39,7 +39,7 @@ impl ResultKeepingRules {
         let size = individual_dice_roll_results.len();
 
         individual_dice_roll_results.sort_by(|a, b| b.final_roll.cmp(&a.final_roll));
-        // will be sorted descending byt final_roll, biggest first
+        // will be sorted descending by final_roll, biggest first
 
         // size = 6
         // idx = 0, 1, 2, 3, 4, 5
@@ -53,7 +53,7 @@ impl ResultKeepingRules {
             if self.keep_or_drop_count > 0 {
                 if !self.high {
                     idx = size - 1 - i;
-                    // reverses the index to iterate from the back when selecting lowest rolls
+                    // reverses the index to iterate from the back when selecting the lowest rolls
                 }
                 let within_limit = i < self.keep_or_drop_count as usize;
                 if self.keep && within_limit {
