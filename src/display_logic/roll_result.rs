@@ -1,8 +1,8 @@
-use crate::success_counting_rules::SuccessCountingRulesApplied;
-use crate::traits::TableDisplay;
+use crate::dice_rolling_logic::success_counting_rules::SuccessCountingRulesApplied;
 use comfy_table::presets::UTF8_FULL;
 use comfy_table::{Cell, ContentArrangement, Table};
 use std::collections::HashMap;
+use crate::utils::TableDisplay;
 
 #[derive(Clone)]
 pub struct SuccessCountingAfterResultKeeping {

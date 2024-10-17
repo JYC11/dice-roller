@@ -1,4 +1,4 @@
-use crate::roll_command::InitialDiceRollResult;
+use crate::dice_rolling_logic::roll_command::InitialDiceRollResult;
 
 #[derive(Copy, Clone)]
 pub struct ResultKeepingRules {

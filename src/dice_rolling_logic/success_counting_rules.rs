@@ -1,9 +1,10 @@
 use crate::enums::Operator;
-use crate::result_keeping_rules::ResultKeepingRulesApplied;
-use crate::roll_result::SuccessCountingAfterResultKeeping;
-use crate::traits::TableDisplay;
+use crate::dice_rolling_logic::result_keeping_rules::ResultKeepingRulesApplied;
+use crate::display_logic::roll_result::SuccessCountingAfterResultKeeping;
 use comfy_table::presets::UTF8_FULL;
 use comfy_table::{Cell, ContentArrangement, Table};
+use crate::utils::TableDisplay;
+
 #[derive(Copy, Clone)]
 pub struct SuccessCountingRules {
     count_success: Option<Operator>,

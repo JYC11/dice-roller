@@ -1,9 +1,8 @@
-use crate::builders::{
+use crate::display_logic::builders::{
     build_dice_roll_commands, build_result_keeping_rules, build_success_counting_rules,
 };
 use crate::enums::Operator;
-use crate::roll_command::InitialDiceRollResult;
-use crate::traits::TableDisplay;
+use crate::dice_rolling_logic::roll_command::InitialDiceRollResult;
 use regex::Regex;
 
 pub fn yn_tf_to_bool(value: String) -> bool {
@@ -35,6 +34,10 @@ pub fn parse_operator(input: &str) -> Option<Operator> {
     };
 
     Some(res)
+}
+
+pub trait TableDisplay {
+    fn display(self);
 }
 
 pub fn parse_number(input: &str) -> u32 {

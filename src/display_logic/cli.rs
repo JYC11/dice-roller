@@ -1,10 +1,10 @@
-use crate::builders::{
+use crate::display_logic::builders::{
     build_dice_roll_commands, build_result_keeping_rules, build_success_counting_rules,
 };
-use crate::roll_command::InitialDiceRollResult;
-use crate::traits::TableDisplay;
+use crate::dice_rolling_logic::roll_command::InitialDiceRollResult;
 use clap::Parser;
 use regex::Regex;
+use crate::utils::TableDisplay;
 
 #[derive(Parser)]
 #[command(

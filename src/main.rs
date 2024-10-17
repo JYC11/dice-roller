@@ -1,14 +1,12 @@
 extern crate core;
 
-mod builders;
-mod cli;
+use display_logic::cli;
+
 mod enums;
-mod result_keeping_rules;
-mod roll_command;
-mod roll_result;
-mod success_counting_rules;
-mod traits;
 mod utils;
+
+mod dice_rolling_logic;
+mod display_logic;
 
 fn main() {
     cli::cli_app();
