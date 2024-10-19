@@ -2,7 +2,7 @@ use crate::dice_rolling_logic::success_counting_rules::SuccessCountingRulesAppli
 use comfy_table::presets::UTF8_FULL;
 use comfy_table::{Cell, ContentArrangement, Table};
 use std::collections::HashMap;
-use crate::utils::{Sort, TableDisplay};
+use crate::utils::{TableDisplay};
 
 #[derive(Clone)]
 pub struct SuccessCountingAfterResultKeeping {
@@ -84,6 +84,14 @@ impl SuccessCountingAfterResultKeeping {
     }
 }
 
+fn format_modifier(modifier: i32) -> String {
+    if modifier >= 0 {
+        format!("+{}", modifier)
+    } else {
+        format!("{}", modifier)
+    }
+}
+
 impl TableDisplay for SuccessCountingAfterResultKeeping {
     fn verbose_display(mut self) {
         self.rolls.sort_by(|a, b| a.group.cmp(&b.group));
@@ -103,12 +111,12 @@ impl TableDisplay for SuccessCountingAfterResultKeeping {
 
         if self.initial_modifier != self.final_modifier {
             header.push(Cell::new("Initial Modifier"));
-            row.push(Cell::new(self.initial_modifier));
+            row.push(Cell::new(format_modifier(self.initial_modifier)));
             header.push(Cell::new("Final Modifier"));
-            row.push(Cell::new(self.final_modifier));
+            row.push(Cell::new(format_modifier(self.final_modifier)));
         } else {
             header.push(Cell::new("Modifier"));
-            row.push(Cell::new(self.final_modifier));
+            row.push(Cell::new(format_modifier(self.final_modifier)));
         }
         if self.deductions_from_failure > 0 {
             header.push(Cell::new("Deductions From Failure"));
@@ -174,6 +182,6 @@ impl TableDisplay for SuccessCountingAfterResultKeeping {
         self.rolls.sort_by(|a, b| a.group.cmp(&b.group));
         self.rolls.iter().for_each(|x| x.clone().abridged_display());
         println!();
-        println!("Modifier: {}, Total: {}", self.final_modifier, self.total);
+        println!("Modifier: {}, Total: {}", format_modifier(self.final_modifier), self.total);
     }
 }

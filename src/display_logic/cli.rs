@@ -4,7 +4,7 @@ use crate::display_logic::builders::{
 use crate::dice_rolling_logic::roll_command::InitialDiceRollResult;
 use clap::Parser;
 use regex::Regex;
-use crate::utils::{yn_tf_to_bool, Sort, TableDisplay};
+use crate::utils::{yn_tf_to_bool, TableDisplay};
 
 #[derive(Parser)]
 #[command(
