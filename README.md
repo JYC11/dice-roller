@@ -1,5 +1,5 @@
-# TODO
-1. testing on windows and mac
+### currently live testing, will release v1.0.0 soon-ish
+#### beta currently fully functional
 
 ### Setup
 * download appropriate release version for your operating system
