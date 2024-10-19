@@ -1,8 +1,8 @@
 use crate::dice_rolling_logic::success_counting_rules::SuccessCountingRulesApplied;
+use crate::utils::{AbridgedTableDisplay, VerboseTableDisplay};
 use comfy_table::presets::UTF8_FULL;
 use comfy_table::{Cell, ContentArrangement, Table};
 use std::collections::HashMap;
-use crate::utils::{TableDisplay};
 
 #[derive(Clone)]
 pub struct SuccessCountingAfterResultKeeping {
@@ -92,7 +92,7 @@ fn format_modifier(modifier: i32) -> String {
     }
 }
 
-impl TableDisplay for SuccessCountingAfterResultKeeping {
+impl VerboseTableDisplay for SuccessCountingAfterResultKeeping {
     fn verbose_display(mut self) {
         self.rolls.sort_by(|a, b| a.group.cmp(&b.group));
         self.rolls.iter().for_each(|x| x.clone().verbose_display());
@@ -177,11 +177,30 @@ impl TableDisplay for SuccessCountingAfterResultKeeping {
             println!("{group_subtotals}");
         }
     }
+}
 
+impl AbridgedTableDisplay for SuccessCountingAfterResultKeeping {
     fn abridged_display(mut self) {
         self.rolls.sort_by(|a, b| a.group.cmp(&b.group));
-        self.rolls.iter().for_each(|x| x.clone().abridged_display());
+        let mut current_group = 1;
+        for i in 0..self.rolls.len() {
+            let curr = &self.rolls[i];
+            if curr.group != current_group {
+                current_group = curr.group;
+                println!()
+            }
+            if curr.kept
+                && ((curr.success == Some(true) || curr.failure == Some(false))
+                    || (curr.success.is_none() && curr.failure.is_none()))
+            {
+                print!("{}/{}, ", curr.final_roll, curr.dice_size)
+            }
+        }
         println!();
-        println!("Modifier: {}, Total: {}", format_modifier(self.final_modifier), self.total);
+        println!(
+            "Modifier: {}, Total: {}",
+            format_modifier(self.final_modifier),
+            self.total
+        );
     }
 }

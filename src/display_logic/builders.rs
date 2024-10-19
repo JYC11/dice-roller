@@ -1,7 +1,7 @@
-use crate::enums::Operator;
 use crate::dice_rolling_logic::result_keeping_rules::ResultKeepingRules;
 use crate::dice_rolling_logic::roll_command::DiceRollCommand;
 use crate::dice_rolling_logic::success_counting_rules::SuccessCountingRules;
+use crate::enums::Operator;
 use crate::utils::{parse_number, parse_operator, yn_tf_to_bool};
 use regex::Regex;
 

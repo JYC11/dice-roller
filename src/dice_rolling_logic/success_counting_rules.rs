@@ -1,9 +1,9 @@
-use crate::enums::Operator;
 use crate::dice_rolling_logic::result_keeping_rules::ResultKeepingRulesApplied;
 use crate::display_logic::roll_result::SuccessCountingAfterResultKeeping;
+use crate::enums::Operator;
+use crate::utils::VerboseTableDisplay;
 use comfy_table::presets::UTF8_FULL;
 use comfy_table::{Cell, ContentArrangement, Table};
-use crate::utils::TableDisplay;
 
 #[derive(Copy, Clone)]
 pub struct SuccessCountingRules {
@@ -156,7 +156,6 @@ impl SuccessCountingRules {
                 }
             }
 
-
             success_counting_rules_applied.push(SuccessCountingRulesApplied::new(
                 roll.group,
                 roll.sign,
@@ -244,7 +243,7 @@ impl SuccessCountingRulesApplied {
     }
 }
 
-impl TableDisplay for SuccessCountingRulesApplied {
+impl VerboseTableDisplay for SuccessCountingRulesApplied {
     fn verbose_display(self) {
         let mut table1 = Table::new();
 
@@ -325,9 +324,5 @@ impl TableDisplay for SuccessCountingRulesApplied {
             .set_header(header)
             .add_row(row);
         println!("{table1}");
-    }
-
-    fn abridged_display(self) {
-        print!("{}/{}, ", self.final_roll, self.dice_size);
     }
 }
