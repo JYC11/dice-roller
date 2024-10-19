@@ -2,7 +2,7 @@ use crate::dice_rolling_logic::success_counting_rules::SuccessCountingRulesAppli
 use comfy_table::presets::UTF8_FULL;
 use comfy_table::{Cell, ContentArrangement, Table};
 use std::collections::HashMap;
-use crate::utils::TableDisplay;
+use crate::utils::{Sort, TableDisplay};
 
 #[derive(Clone)]
 pub struct SuccessCountingAfterResultKeeping {
@@ -85,10 +85,9 @@ impl SuccessCountingAfterResultKeeping {
 }
 
 impl TableDisplay for SuccessCountingAfterResultKeeping {
-    fn display(mut self) {
+    fn verbose_display(mut self) {
         self.rolls.sort_by(|a, b| a.group.cmp(&b.group));
-        self.rolls.iter().for_each(|x| x.clone().display());
-
+        self.rolls.iter().for_each(|x| x.clone().verbose_display());
         let mut header = vec![
             Cell::new("Total Before Modifier"),
             Cell::new("Total"),
@@ -169,5 +168,12 @@ impl TableDisplay for SuccessCountingAfterResultKeeping {
                 .add_row(groups);
             println!("{group_subtotals}");
         }
+    }
+
+    fn abridged_display(mut self) {
+        self.rolls.sort_by(|a, b| a.group.cmp(&b.group));
+        self.rolls.iter().for_each(|x| x.clone().abridged_display());
+        println!();
+        println!("Modifier: {}, Total: {}", self.final_modifier, self.total);
     }
 }

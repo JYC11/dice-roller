@@ -11,6 +11,8 @@
   * gt = greater than
   * gte = greater than or equal to
   * eq = equal to
+* `-v` is the verbose flag used for more detailed results
+  * It is `false` by default
 ```shell
 dice-roller -d 1d20+7 # roll 1d20+7
 dice-roller -d 1d20+7 -r lt10 # roll 1d20+7 but re-roll if result is less than 10

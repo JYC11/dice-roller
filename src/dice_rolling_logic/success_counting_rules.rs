@@ -245,7 +245,7 @@ impl SuccessCountingRulesApplied {
 }
 
 impl TableDisplay for SuccessCountingRulesApplied {
-    fn display(self) {
+    fn verbose_display(self) {
         let mut table1 = Table::new();
 
         let added = self.sign > 0;
@@ -325,5 +325,9 @@ impl TableDisplay for SuccessCountingRulesApplied {
             .set_header(header)
             .add_row(row);
         println!("{table1}");
+    }
+
+    fn abridged_display(self) {
+        print!("{}/{}, ", self.final_roll, self.dice_size);
     }
 }

@@ -4,7 +4,7 @@ use crate::display_logic::builders::{
 use crate::dice_rolling_logic::roll_command::InitialDiceRollResult;
 use clap::Parser;
 use regex::Regex;
-use crate::utils::TableDisplay;
+use crate::utils::{yn_tf_to_bool, Sort, TableDisplay};
 
 #[derive(Parser)]
 #[command(
@@ -22,6 +22,18 @@ pub struct Cli {
     )
     ]
     dice_roll: Option<String>,
+
+    #[
+    arg(
+            short,
+            value_parser = validate_yn_tf,
+            num_args = 0..=1,
+            require_equals = true,
+            default_missing_value = "y",
+            help = "example: dice-roller -d 2d6+9 -v"
+    )
+    ]
+    verbose: Option<String>, // y/n/t/f or Y/N/T/F
 
     #[
     arg(
@@ -278,9 +290,15 @@ pub fn cli_app() {
                 initial_results.append(&mut command.roll_dice())
             }
             let mut secondary_results = result_keeping_rules.process_results(&mut initial_results);
-            let final_results =
-                success_keeping_rules.count_successes(&mut secondary_results, modifier);
-            final_results.display()
+            let final_results = success_keeping_rules.count_successes(&mut secondary_results, modifier);
+            let verbose = yn_tf_to_bool(
+                cli.verbose.unwrap_or("n".parse().unwrap())
+            );
+            if verbose {
+                final_results.verbose_display()
+            } else {
+                final_results.abridged_display()
+            }
         }
     }
 }

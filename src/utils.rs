@@ -37,7 +37,9 @@ pub fn parse_operator(input: &str) -> Option<Operator> {
 }
 
 pub trait TableDisplay {
-    fn display(self);
+    fn verbose_display(self);
+
+    fn abridged_display(self);
 }
 
 pub fn parse_number(input: &str) -> u32 {
@@ -66,5 +68,5 @@ pub fn _sample_for_testing() {
     );
     let mut secondary_results = result_keeping_rules.process_results(&mut initial_results);
     let final_results = success_keeping_rules.count_successes(&mut secondary_results, modifier);
-    final_results.display()
+    final_results.verbose_display()
 }
