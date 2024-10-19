@@ -1,22 +1,32 @@
 # TODO
 1. testing on windows and mac
 
+### Setup
+* download appropriate release version for your operating system
+  * I only support m1 mac and windows for now
+* put the downloaded files in a folder somewhere of your choosing
+* use a terminal if on mac, command prompt or powershell if on windows to cd(change directory) into the folder
+* refer to the "how to" below on using the dice roller
+  * for windows the commands are the exact same except `dice-roller` has a `.exe` at the end like this: `dice-roller.exe`
+
 ### How To
 * heavily inspired by this: https://foundryvtt.com/article/dice-modifiers/
+* the logic is almost exactly the same so if the explanation is not clear, you can also refer to the link above
+* use `dice-roller -h` to see options
+* `-v` is the verbose flag used for more detailed results
+  * It is `false` by default
 * comparison operators: `lt`, `lte`, `gt`, `gte`, `eq`
   * `lt` = less than
   * `lte` = less than or equal to
   * `gt` = greater than
   * `gte` = greater than or equal to
   * `eq` = equal to
-* `-v` is the verbose flag used for more detailed results
-  * It is `false` by default
 ```shell
 dice-roller -d 1d20+7 # roll 1d20+7
 dice-roller -d 1d20+7 -r lt10 # roll 1d20+7 but re-roll if result is less than 10
 dice-roller -d 1d20+7 -r lt10 --rr # roll 1d20+7 but keep re-rolling if result is less than 10
-dice-roller -d 10d4 -x lte2  # roll 10d4 and keep re-rolling if result is lte 2
-dice-roller -d 1d20+7 -x eq15 --xo  # roll 10d4 and re-roll once if result is lte 2
+dice-roller -d 10d4 -x lte2  # roll 10d4 and keep rolling the dice if result is lte 2
+dice-roller -d 1d20+7 -x eq15 --xo  # roll 10d4 and roll once if result is lte 2
 ```
 * you can also roll multiple dice at once
 ```shell
