@@ -1,8 +1,8 @@
 use display_logic::cli;
-mod enums;
-mod utils;
 mod dice_rolling_logic;
 mod display_logic;
+mod enums;
+mod utils;
 
 fn main() {
     cli::cli_app();
