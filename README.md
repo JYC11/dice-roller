@@ -1,7 +1,7 @@
-# TODO in no particular order
-1. testing on windows and mac/figure out how to build for windows and mac
+# TODO
+1. testing on windows and mac
 
-### Example Commands
+### How To
 * heavily inspired by this: https://foundryvtt.com/article/dice-modifiers/
 * comparison operators: `lt`, `lte`, `gt`, `gte`, `eq`
   * `lt` = less than
