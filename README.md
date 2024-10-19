@@ -3,12 +3,12 @@
 
 ### Example Commands
 * heavily inspired by this: https://foundryvtt.com/article/dice-modifiers/
-* comparison operators: lt, lte, gt, gte, eq
-  * lt = less than
-  * lte = less than or equal to
-  * gt = greater than
-  * gte = greater than or equal to
-  * eq = equal to
+* comparison operators: `lt`, `lte`, `gt`, `gte`, `eq`
+  * `lt` = less than
+  * `lte` = less than or equal to
+  * `gt` = greater than
+  * `gte` = greater than or equal to
+  * `eq` = equal to
 * `-v` is the verbose flag used for more detailed results
   * It is `false` by default
 ```shell
@@ -43,4 +43,4 @@ dice-roller -d 10d20 --cf gt10 --df  # roll 10d20 count failures greater than 10
 dice-roller -d 10d20 --sf lt5  # roll 10d20 subtract any rolls from final result that is less than 5
 dice-roller -d 1d20+15 --ms 10  # roll 1d20+15 with margin of success 10 (eg: 1d20 rolls 14, modifier = 15, 14+15-10 = 19)
 ```
-* df flag will by default deduct failures by 1 but you can also use like this `--df 2` to specify how much you will deduct per failure
+* `--df` flag will by default deduct failures by `1`, but you can also use like this `--df 2` to specify how much you will deduct per failure
