@@ -16,8 +16,8 @@
 target/debug/dice-roller -d 1d20+7 # roll 1d20+7
 target/debug/dice-roller -d 1d20+7 -r lt10 # roll 1d20+7 but re-roll if result is less than 10
 target/debug/dice-roller -d 1d20+7 -r lt10 --rr # roll 1d20+7 but keep re-rolling if result is less than 10
-target/debug/dice-roller -d 10d4 -e lte2  # roll 10d4 and keep re-rolling if result is lte 2
-target/debug/dice-roller -d 1d20+7 -e eq15 --eo  # roll 10d4 and re-roll once if result is lte 2
+target/debug/dice-roller -d 10d4 -x lte2  # roll 10d4 and keep re-rolling if result is lte 2
+target/debug/dice-roller -d 1d20+7 -x eq15 --xo  # roll 10d4 and re-roll once if result is lte 2
 ```
 * you can also roll multiple dice at once
 ```shell

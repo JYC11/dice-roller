@@ -51,11 +51,11 @@ pub struct Cli {
             help = "example: dice-roller -d 3d8 -e eq8"
     )
     ]
-    explode: Option<String>, // eq/gt/lt/lte/gte + num
+    xplode: Option<String>, // eq/gt/lt/lte/gte + num
 
     #[
     arg(
-            long = "eo",
+            long = "xo",
             value_parser = validate_yn_tf,
             num_args = 0..=1,
             require_equals = true,
@@ -251,7 +251,7 @@ pub fn cli_app() {
                 dice_roll,
                 cli.re_roll,
                 cli.re_roll_recursively,
-                cli.explode,
+                cli.xplode,
                 cli.explode_once,
             );
             let result_keeping_rules = build_result_keeping_rules(
