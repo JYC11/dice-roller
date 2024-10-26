@@ -49,14 +49,14 @@ impl DiceRollCommand {
             match self.re_roll {
                 None => final_roll = roll_result,
                 Some(target) => {
-                    let needs_re_roll = self.needs_re_roll(&roll_result, &target);
+                    let needs_re_roll = self.should_apply_operator(&roll_result, &target);
                     if needs_re_roll && !self.re_roll_recursively {
                         let second_result = rng.gen_range(1..max_range);
                         discarded_rolls.push(roll_result);
                         final_roll = second_result;
                     } else if needs_re_roll && self.re_roll_recursively {
                         let mut new_roll = rng.gen_range(1..max_range);
-                        while self.needs_re_roll(&new_roll, &target) {
+                        while self.should_apply_operator(&new_roll, &target) {
                             discarded_rolls.push(new_roll);
                             new_roll = rng.gen_range(1..max_range);
                         }
@@ -70,14 +70,14 @@ impl DiceRollCommand {
             match self.explode {
                 None => {}
                 Some(target) => {
-                    let needs_explosion = self.needs_explosion(&final_roll, &target);
+                    let needs_explosion = self.should_apply_operator(&final_roll, &target);
                     if needs_explosion && self.explode_once {
                         exploded_rolls.push(rng.gen_range(1..max_range));
                     }
                     if needs_explosion && !self.explode_once {
                         let mut exploded_roll = rng.gen_range(1..max_range);
                         exploded_rolls.push(exploded_roll);
-                        while self.needs_explosion(&exploded_roll, &target) {
+                        while self.should_apply_operator(&exploded_roll, &target) {
                             exploded_roll = rng.gen_range(1..max_range);
                             exploded_rolls.push(exploded_roll);
                         }
@@ -101,17 +101,7 @@ impl DiceRollCommand {
         individual_results
     }
 
-    fn needs_re_roll(&self, source: &u32, target: &Operator) -> bool {
-        match target {
-            Operator::Eq(target) => source == target,
-            Operator::Gt(target) => source > target,
-            Operator::Gte(target) => source >= target,
-            Operator::Lt(target) => source < target,
-            Operator::Lte(target) => source <= target,
-        }
-    }
-
-    fn needs_explosion(&self, source: &u32, target: &Operator) -> bool {
+    fn should_apply_operator(&self, source: &u32, target: &Operator) -> bool {
         match target {
             Operator::Eq(target) => source == target,
             Operator::Gt(target) => source > target,
