@@ -43,27 +43,31 @@ impl ResultKeepingRules {
             dice_rolls.sort_by(|a, b| a.final_roll.cmp(&b.final_roll));
         }
 
-        dice_rolls.iter().enumerate().map(|(i, roll)| {
-            let should_keep = self.should_keep_roll(i);
-            let replacement_roll = self.replacement_roll(roll.final_roll);
+        dice_rolls
+            .iter()
+            .enumerate()
+            .map(|(i, roll)| {
+                let should_keep = self.should_keep_roll(i);
+                let replacement_roll = self.replacement_roll(roll.final_roll);
 
-            let final_roll = replacement_roll.unwrap_or(roll.final_roll);
-            let subtotal = roll.subtotal - roll.final_roll as i32 + final_roll as i32;
-            let replaced_roll = replacement_roll.is_some().then(|| roll.final_roll);
+                let final_roll = replacement_roll.unwrap_or(roll.final_roll);
+                let subtotal = roll.subtotal - roll.final_roll as i32 + final_roll as i32;
+                let replaced_roll = replacement_roll.is_some().then(|| roll.final_roll);
 
-            ResultKeepingRulesApplied::new(
-                roll.group,
-                roll.sign,
-                roll.roll_number,
-                roll.dice_size,
-                final_roll,
-                roll.discarded_rolls.clone(),
-                roll.exploded_rolls.clone(),
-                subtotal,
-                should_keep,
-                replaced_roll,
-            )
-        }).collect()
+                ResultKeepingRulesApplied::new(
+                    roll.group,
+                    roll.sign,
+                    roll.roll_number,
+                    roll.dice_size,
+                    final_roll,
+                    roll.discarded_rolls.clone(),
+                    roll.exploded_rolls.clone(),
+                    subtotal,
+                    should_keep,
+                    replaced_roll,
+                )
+            })
+            .collect()
     }
 
     fn should_keep_roll(&self, index: usize) -> bool {

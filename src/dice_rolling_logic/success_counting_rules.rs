@@ -55,104 +55,33 @@ impl SuccessCountingRules {
         let mut failures = 0;
 
         for roll in result_keeping_rules_applied {
-            let mut success = None;
-            let mut failure = None;
-            let mut subtracted = false;
-            let mut deduction = 0;
+            let success = self.check_success(roll.final_roll);
+            let failure = self.check_failure(roll.final_roll);
+            let (subtracted, deduction) =
+                self.calculate_deductions(roll.final_roll, success, failure);
 
             if roll.kept {
-                success = match self.count_success {
-                    None => None,
-                    Some(operator) => match operator {
-                        Operator::Eq(target) => Some(roll.final_roll == target),
-                        Operator::Gt(target) => Some(roll.final_roll > target),
-                        Operator::Gte(target) => Some(roll.final_roll >= target),
-                        Operator::Lt(target) => Some(roll.final_roll < target),
-                        Operator::Lte(target) => Some(roll.final_roll <= target),
-                    },
-                };
-                match success {
-                    None => {}
-                    Some(val) => {
-                        if val {
-                            successes += 1
-                        } else {
-                            failures += 1
-                        }
-                    }
+                if let Some(true) = success {
+                    successes += 1;
+                } else if let Some(false) = success {
+                    failures += 1;
                 }
 
-                failure = match self.count_failure {
-                    None => None,
-                    Some(operator) => match operator {
-                        Operator::Eq(target) => Some(roll.final_roll == target),
-                        Operator::Gt(target) => Some(roll.final_roll > target),
-                        Operator::Gte(target) => Some(roll.final_roll >= target),
-                        Operator::Lt(target) => Some(roll.final_roll < target),
-                        Operator::Lte(target) => Some(roll.final_roll <= target),
-                    },
-                };
-                match failure {
-                    None => {}
-                    Some(val) => {
-                        if !val {
-                            successes += 1
-                        } else {
-                            failures += 1
-                        }
-                    }
+                if let Some(true) = failure {
+                    failures += 1;
+                } else if let Some(false) = failure {
+                    successes += 1;
                 }
 
-                if self.subtract_failure {
-                    match success {
-                        None => {}
-                        Some(success) => {
-                            if !success {
-                                subtracted = true;
-                                total_subtracted += roll.final_roll;
-                            }
-                        }
-                    }
-                    match failure {
-                        None => {}
-                        Some(failure) => {
-                            if failure {
-                                subtracted = true;
-                                total_subtracted += roll.final_roll;
-                            }
-                        }
-                    }
-                }
+                total_subtracted += subtracted;
+                total_deducted += deduction;
 
-                match self.deduct_failure {
-                    None => {}
-                    Some(value) => {
-                        match success {
-                            None => {}
-                            Some(success) => {
-                                if !success {
-                                    deduction += value;
-                                    total_deducted += value;
-                                }
-                            }
-                        }
-                        match failure {
-                            None => {}
-                            Some(failure) => {
-                                if failure {
-                                    deduction += value;
-                                    total_deducted += value
-                                }
-                            }
-                        }
-                    }
-                }
-
+                // Count even and odd rolls
                 if self.count_even && roll.final_roll % 2 == 0 {
-                    evens += 1
+                    evens += 1;
                 }
                 if self.count_odd && roll.final_roll % 2 != 0 {
-                    odds += 1
+                    odds += 1;
                 }
             }
 
@@ -169,10 +98,11 @@ impl SuccessCountingRules {
                 roll.replaced_roll,
                 success,
                 failure,
-                subtracted,
+                subtracted > 0,
                 deduction,
-            ))
+            ));
         }
+
         success_counting_rules_applied.sort_by(|a, b| a.roll_number.cmp(&b.roll_number));
 
         SuccessCountingAfterResultKeeping::new(
@@ -186,6 +116,50 @@ impl SuccessCountingRules {
             evens,
             odds,
         )
+    }
+
+    fn check_success(&self, roll_value: u32) -> Option<bool> {
+        self.count_success
+            .map(|operator| self.apply_operator(operator, roll_value))
+    }
+
+    fn check_failure(&self, roll_value: u32) -> Option<bool> {
+        self.count_failure
+            .map(|operator| self.apply_operator(operator, roll_value))
+    }
+
+    fn apply_operator(&self, operator: Operator, roll_value: u32) -> bool {
+        match operator {
+            Operator::Eq(target) => roll_value == target,
+            Operator::Gt(target) => roll_value > target,
+            Operator::Gte(target) => roll_value >= target,
+            Operator::Lt(target) => roll_value < target,
+            Operator::Lte(target) => roll_value <= target,
+        }
+    }
+
+    fn calculate_deductions(
+        &self,
+        roll_value: u32,
+        success: Option<bool>,
+        failure: Option<bool>,
+    ) -> (u32, u32) {
+        let mut total_subtracted = 0;
+        let mut total_deducted = 0;
+
+        if self.subtract_failure {
+            if matches!(success, Some(false)) || matches!(failure, Some(true)) {
+                total_subtracted += roll_value;
+            }
+        }
+
+        if let Some(value) = self.deduct_failure {
+            if matches!(success, Some(false)) || matches!(failure, Some(true)) {
+                total_deducted += value;
+            }
+        }
+
+        (total_subtracted, total_deducted)
     }
 }
 
