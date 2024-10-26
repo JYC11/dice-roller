@@ -36,69 +36,71 @@ impl DiceRollCommand {
     }
 
     pub fn roll_dice(&self) -> Vec<InitialDiceRollResult> {
+        (1..=self.dice_count)
+            .map(|roll_number| self.roll_single_dice(roll_number))
+            .collect()
+    }
+
+    fn roll_single_dice(&self, roll_number: u32) -> InitialDiceRollResult {
         let mut rng = rand::thread_rng();
-        let mut current_dice_count = 0;
-        let mut individual_results: Vec<InitialDiceRollResult> = vec![];
-        let max_range = self.dice_size + 1;
-        while current_dice_count != self.dice_count {
-            let mut discarded_rolls: Vec<u32> = vec![];
-            let mut exploded_rolls: Vec<u32> = vec![];
+        let mut discarded_rolls = vec![];
+        let mut exploded_rolls = vec![];
+        let mut roll = rng.gen_range(1..=self.dice_size);
 
-            let roll_result = rng.gen_range(1..max_range);
-            let mut final_roll: u32 = roll_result;
-            match self.re_roll {
-                None => final_roll = roll_result,
-                Some(target) => {
-                    let needs_re_roll = self.should_apply_operator(&roll_result, &target);
-                    if needs_re_roll && !self.re_roll_recursively {
-                        let second_result = rng.gen_range(1..max_range);
-                        discarded_rolls.push(roll_result);
-                        final_roll = second_result;
-                    } else if needs_re_roll && self.re_roll_recursively {
-                        let mut new_roll = rng.gen_range(1..max_range);
-                        while self.should_apply_operator(&new_roll, &target) {
-                            discarded_rolls.push(new_roll);
-                            new_roll = rng.gen_range(1..max_range);
-                        }
-                        final_roll = new_roll;
-                    } else if !needs_re_roll {
-                        final_roll = roll_result;
-                    }
-                }
-            }
-
-            match self.explode {
-                None => {}
-                Some(target) => {
-                    let needs_explosion = self.should_apply_operator(&final_roll, &target);
-                    if needs_explosion && self.explode_once {
-                        exploded_rolls.push(rng.gen_range(1..max_range));
-                    }
-                    if needs_explosion && !self.explode_once {
-                        let mut exploded_roll = rng.gen_range(1..max_range);
-                        exploded_rolls.push(exploded_roll);
-                        while self.should_apply_operator(&exploded_roll, &target) {
-                            exploded_roll = rng.gen_range(1..max_range);
-                            exploded_rolls.push(exploded_roll);
-                        }
-                    }
-                    if !needs_explosion {}
-                }
-            }
-
-            individual_results.push(InitialDiceRollResult::new(
-                self.group,
-                self.sign,
-                current_dice_count + 1,
-                self.dice_size,
-                final_roll,
-                discarded_rolls,
-                exploded_rolls,
-            ));
-            current_dice_count += 1
+        if let Some(target) = &self.re_roll {
+            roll = self.apply_re_rolls(&mut rng, roll, target, &mut discarded_rolls);
         }
 
-        individual_results
+        if let Some(target) = &self.explode {
+            self.apply_explosions(&mut rng, roll, target, &mut exploded_rolls);
+        }
+
+        InitialDiceRollResult::new(
+            self.group,
+            self.sign,
+            roll_number,
+            self.dice_size,
+            roll,
+            discarded_rolls,
+            exploded_rolls,
+        )
+    }
+
+    fn apply_re_rolls(
+        &self,
+        rng: &mut impl Rng,
+        initial_roll: u32,
+        target: &Operator,
+        discarded_rolls: &mut Vec<u32>,
+    ) -> u32 {
+        let mut roll = initial_roll;
+        while self.should_apply_operator(&roll, target) {
+            discarded_rolls.push(roll);
+            roll = rng.gen_range(1..=self.dice_size);
+            if !self.re_roll_recursively {
+                break;
+            }
+        }
+        roll
+    }
+
+    fn apply_explosions(
+        &self,
+        rng: &mut impl Rng,
+        initial_roll: u32,
+        target: &Operator,
+        exploded_rolls: &mut Vec<u32>,
+    ) {
+        if self.should_apply_operator(&initial_roll, target) {
+            let mut roll = rng.gen_range(1..=self.dice_size);
+            exploded_rolls.push(roll);
+            if !self.explode_once {
+                while self.should_apply_operator(&roll, target) {
+                    roll = rng.gen_range(1..=self.dice_size);
+                    exploded_rolls.push(roll);
+                }
+            }
+        }
     }
 
     fn should_apply_operator(&self, source: &u32, target: &Operator) -> bool {
