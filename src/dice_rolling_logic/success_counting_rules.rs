@@ -1,7 +1,7 @@
 use crate::dice_rolling_logic::result_keeping_rules::ResultKeepingRulesApplied;
 use crate::display_logic::roll_result::SuccessCountingAfterResultKeeping;
 use crate::enums::Operator;
-use crate::utils::VerboseTableDisplay;
+use crate::utils::{apply_operator, VerboseTableDisplay};
 use comfy_table::presets::UTF8_FULL;
 use comfy_table::{Cell, ContentArrangement, Table};
 
@@ -120,22 +120,12 @@ impl SuccessCountingRules {
 
     fn check_success(&self, roll_value: u32) -> Option<bool> {
         self.count_success
-            .map(|operator| self.apply_operator(operator, roll_value))
+            .map(|operator| apply_operator(operator, &roll_value))
     }
 
     fn check_failure(&self, roll_value: u32) -> Option<bool> {
         self.count_failure
-            .map(|operator| self.apply_operator(operator, roll_value))
-    }
-
-    fn apply_operator(&self, operator: Operator, roll_value: u32) -> bool {
-        match operator {
-            Operator::Eq(target) => roll_value == target,
-            Operator::Gt(target) => roll_value > target,
-            Operator::Gte(target) => roll_value >= target,
-            Operator::Lt(target) => roll_value < target,
-            Operator::Lte(target) => roll_value <= target,
-        }
+            .map(|operator| apply_operator(operator, &roll_value))
     }
 
     fn calculate_deductions(

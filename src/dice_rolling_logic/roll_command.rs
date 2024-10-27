@@ -1,5 +1,7 @@
 use crate::enums::Operator;
 use rand::Rng;
+use crate::utils::apply_operator;
+
 #[derive(Copy, Clone, Debug)]
 pub struct DiceRollCommand {
     group: i32,
@@ -74,7 +76,7 @@ impl DiceRollCommand {
         discarded_rolls: &mut Vec<u32>,
     ) -> u32 {
         let mut roll = initial_roll;
-        while self.should_apply_operator(&roll, target) {
+        while apply_operator(*target, &roll) {
             discarded_rolls.push(roll);
             roll = rng.gen_range(1..=self.dice_size);
             if !self.re_roll_recursively {
@@ -91,25 +93,15 @@ impl DiceRollCommand {
         target: &Operator,
         exploded_rolls: &mut Vec<u32>,
     ) {
-        if self.should_apply_operator(&initial_roll, target) {
+        if apply_operator(*target, &initial_roll) {
             let mut roll = rng.gen_range(1..=self.dice_size);
             exploded_rolls.push(roll);
             if !self.explode_once {
-                while self.should_apply_operator(&roll, target) {
+                while apply_operator(*target, &roll) {
                     roll = rng.gen_range(1..=self.dice_size);
                     exploded_rolls.push(roll);
                 }
             }
-        }
-    }
-
-    fn should_apply_operator(&self, source: &u32, target: &Operator) -> bool {
-        match target {
-            Operator::Eq(target) => source == target,
-            Operator::Gt(target) => source > target,
-            Operator::Gte(target) => source >= target,
-            Operator::Lt(target) => source < target,
-            Operator::Lte(target) => source <= target,
         }
     }
 }

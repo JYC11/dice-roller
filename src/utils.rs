@@ -40,6 +40,16 @@ pub fn parse_operator(input: &str) -> Option<Operator> {
     Some(res)
 }
 
+pub fn apply_operator(operator: Operator, roll_value: &u32) -> bool {
+    match operator {
+        Operator::Eq(target) => roll_value == &target,
+        Operator::Gt(target) => roll_value > &target,
+        Operator::Gte(target) => roll_value >= &target,
+        Operator::Lt(target) => roll_value < &target,
+        Operator::Lte(target) => roll_value <= &target,
+    }
+}
+
 pub trait VerboseTableDisplay {
     fn verbose_display(self);
 }
