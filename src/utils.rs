@@ -50,18 +50,18 @@ pub fn apply_operator(operator: Operator, roll_value: &u32) -> bool {
     }
 }
 
+pub fn parse_number(input: &str) -> u32 {
+    let number_part = Regex::new(r"\d+").unwrap();
+    let number = number_part.find(input).unwrap().as_str().parse().unwrap();
+    number
+}
+
 pub trait VerboseTableDisplay {
     fn verbose_display(self);
 }
 
 pub trait AbridgedTableDisplay {
     fn abridged_display(self);
-}
-
-pub fn parse_number(input: &str) -> u32 {
-    let number_part = Regex::new(r"\d+").unwrap();
-    let number = number_part.find(input).unwrap().as_str().parse().unwrap();
-    number
 }
 
 pub fn _sample_for_testing() {
