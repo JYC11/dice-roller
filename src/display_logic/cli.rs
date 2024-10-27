@@ -292,7 +292,7 @@ pub fn cli_app() {
             let mut secondary_results = result_keeping_rules.process_results(&mut initial_results);
             let final_results =
                 success_keeping_rules.count_successes(&mut secondary_results, modifier);
-            let verbose = yn_tf_to_bool(cli.verbose.unwrap_or("n".parse().unwrap()));
+            let verbose = yn_tf_to_bool(cli.verbose);
             if verbose {
                 final_results.verbose_display()
             } else {

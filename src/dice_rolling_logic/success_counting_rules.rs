@@ -223,13 +223,6 @@ impl VerboseTableDisplay for SuccessCountingRulesApplied {
 
         let added = self.sign > 0;
 
-        let mut success = None;
-        match (self.success, self.failure) {
-            (Some(true), Some(false)) => success = Some("true"),
-            (Some(false), Some(true)) => success = Some("false"),
-            (_, _) => {}
-        }
-
         let mut header = vec![
             Cell::new("Dice group"),
             Cell::new("Dice"),
@@ -269,7 +262,14 @@ impl VerboseTableDisplay for SuccessCountingRulesApplied {
             row.push(Cell::new(self.kept));
         }
 
-        if let Some(target) = &self.success {
+        let success: Option<&str>;
+        match (self.success, self.failure) {
+            (Some(true), Some(false)) => success = Some("true"),
+            (Some(false), Some(true)) => success = Some("false"),
+            (_, _) => success = None,
+        }
+
+        if let Some(target) = success {
             header.push(Cell::new("Success"));
             row.push(Cell::new(target));
         }
