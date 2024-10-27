@@ -5,14 +5,18 @@ use crate::display_logic::builders::{
 use crate::enums::Operator;
 use regex::Regex;
 
-pub fn yn_tf_to_bool(value: String) -> bool {
-    let lowercased = value.to_lowercase();
-    if lowercased == "y" || lowercased == "t" {
-        true
-    } else if lowercased == "n" || lowercased == "f" {
-        false
+pub fn yn_tf_to_bool(value: Option<String>) -> bool {
+    if let Some(value) = value {
+        let lowercased = value.to_lowercase();
+        if lowercased == "y" || lowercased == "t" {
+            true
+        } else if lowercased == "n" || lowercased == "f" {
+            false
+        } else {
+            unreachable!()
+        }
     } else {
-        unreachable!()
+        false
     }
 }
 

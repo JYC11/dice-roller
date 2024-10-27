@@ -32,10 +32,7 @@ pub fn build_dice_roll_commands(
         }
     };
 
-    let re_roll_recursively_input = match re_roll_recursively {
-        None => false,
-        Some(value) => yn_tf_to_bool(value),
-    };
+    let re_roll_recursively_input = yn_tf_to_bool(re_roll_recursively);
 
     let explode_number: u32;
     let explode_input = match explode {
@@ -46,10 +43,7 @@ pub fn build_dice_roll_commands(
         }
     };
 
-    let explode_once_input = match explode_once {
-        None => false,
-        Some(value) => yn_tf_to_bool(value),
-    };
+    let explode_once_input = yn_tf_to_bool(explode_once);
 
     // This regex matches both dice expressions and numeric modifiers
     let re = Regex::new(r"([+-]?\d+d\d+)|([+-]?\d+)").unwrap();
@@ -227,15 +221,9 @@ pub fn build_success_counting_rules(
         subtract_failures_input = false;
     }
 
-    let even_input = match even {
-        None => false,
-        Some(value) => yn_tf_to_bool(value),
-    };
+    let even_input = yn_tf_to_bool(even);
 
-    let odd_input = match odd {
-        None => false,
-        Some(value) => yn_tf_to_bool(value),
-    };
+    let odd_input = yn_tf_to_bool(odd);
 
     SuccessCountingRules::new(
         count_success_input,
