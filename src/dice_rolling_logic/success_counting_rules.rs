@@ -224,11 +224,10 @@ impl VerboseTableDisplay for SuccessCountingRulesApplied {
         let added = self.sign > 0;
 
         let mut success = None;
-        if self.success == Some(true) || self.failure == Some(false) {
-            success = Some("true");
-        }
-        if self.success == Some(false) || self.failure == Some(true) {
-            success = Some("false");
+        match (self.success, self.failure) {
+            (Some(true), Some(false)) => { success = Some("true") }
+            (Some(false), Some(true)) => { success = Some("false") }
+            (_,_) => {}
         }
 
         let mut header = vec![
@@ -257,15 +256,12 @@ impl VerboseTableDisplay for SuccessCountingRulesApplied {
             row.push(Cell::new(format!("{:?}", self.exploded_rolls)));
         }
 
-        match self.replaced_roll {
-            None => {}
-            Some(replaced_roll) => {
-                header.push(Cell::new("Replaced"));
-                row.push(Cell::new(format!(
-                    "{} has been replaced with {}",
-                    replaced_roll, self.final_roll
-                )));
-            }
+        if let Some(target) = &self.replaced_roll {
+            header.push(Cell::new("Replaced"));
+            row.push(Cell::new(format!(
+                "{} has been replaced with {}",
+                target, self.final_roll
+            )));
         }
 
         if !self.kept {
@@ -273,10 +269,11 @@ impl VerboseTableDisplay for SuccessCountingRulesApplied {
             row.push(Cell::new(self.kept));
         }
 
-        if success.is_some() {
+        if let Some(target) = &self.success {
             header.push(Cell::new("Success"));
-            row.push(Cell::new(success.unwrap_or("-")));
+            row.push(Cell::new(target));
         }
+
 
         if self.deductions > 0 {
             header.push(Cell::new("Deductions from final roll"));

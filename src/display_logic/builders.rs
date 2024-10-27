@@ -23,9 +23,9 @@ pub fn build_dice_roll_commands(
     explode: Option<String>,
     explode_once: Option<String>,
 ) -> (Vec<DiceRollCommand>, i32) {
-    let mut re_roll_number = 0;
+    let re_roll_number: u32;
     let re_roll_input = match re_roll {
-        None => None,
+        None => { re_roll_number = 0; None },
         Some(input) => {
             re_roll_number = parse_number(&input);
             parse_operator(&input)
@@ -37,9 +37,9 @@ pub fn build_dice_roll_commands(
         Some(value) => yn_tf_to_bool(value),
     };
 
-    let mut explode_number = 0;
+    let explode_number: u32;
     let explode_input = match explode {
-        None => None,
+        None => { explode_number = 0; None },
         Some(input) => {
             explode_number = parse_number(&input);
             parse_operator(&input)
@@ -122,60 +122,48 @@ pub fn build_result_keeping_rules(
         .or_else(|| keep_low.map(|value| ("keep_low", value)))
         .or_else(|| drop_high.map(|value| ("drop_high", value)))
         .or_else(|| drop_low.map(|value| ("drop_low", value)))
-        .or(Some(("none", 0u32)));
+        .or(None);
 
-    let mut keep_input = false;
-    let mut high_input = false;
-    let mut keep_or_drop_count_input = 0;
+    let keep_input: bool;
+    let high_input: bool;
+    let keep_or_drop_count_input: u32;
 
-    match keeping_rule {
-        None => {}
-        Some((rule, value)) => {
-            if rule == "keep_high" {
-                keep_input = true;
-                high_input = true;
-                keep_or_drop_count_input = value;
-            } else if rule == "keep_low" {
-                keep_input = true;
-                high_input = false;
-                keep_or_drop_count_input = value;
-            } else if rule == "drop_high" {
-                keep_input = false;
-                high_input = true;
-                keep_or_drop_count_input = value;
-            } else if rule == "drop_low" {
-                keep_input = false;
-                high_input = false;
-                keep_or_drop_count_input = value;
-            } else if rule == "none" {
-            } else {
-                unreachable!()
-            }
+    if let Some((rule, value)) = keeping_rule {
+        if rule.contains("keep") {
+            keep_input = true;
+        } else {
+            keep_input = false;
         }
+        if rule.contains("high") {
+            high_input = true;
+        } else {
+            high_input = false;
+        }
+        keep_or_drop_count_input = value
+    } else {
+        keep_input = false;
+        high_input = false;
+        keep_or_drop_count_input = 0;
     }
 
-    let mut be_replaced_with_input: Option<u32> = None;
-    let mut min_input = false;
+    let be_replaced_with_input: Option<u32>;
+    let min_input: bool;
 
     let min_max_rule = min
         .map(|value| ("min", value))
         .or_else(|| max.map(|value| ("max", value)))
-        .or(Some(("none", 0u32)));
+        .or(None);
 
-    match min_max_rule {
-        None => {}
-        Some((rule, value)) => {
-            if rule == "min" {
-                be_replaced_with_input = Some(value);
-                min_input = true;
-            } else if rule == "max" {
-                be_replaced_with_input = Some(value);
-                min_input = false;
-            } else if rule == "none" {
-            } else {
-                unreachable!()
-            }
+    if let Some((rule, value)) = min_max_rule {
+        if rule == "min" {
+            min_input = true;
+        } else {
+            min_input = false;
         }
+        be_replaced_with_input = Some(value)
+    } else {
+        be_replaced_with_input = None;
+        min_input = false;
     }
 
     ResultKeepingRules::new(
@@ -209,29 +197,34 @@ pub fn build_success_counting_rules(
         "Only one of count_success, subtract_failures or count_failure can be used"
     );
 
-    let mut count_success_input: Option<Operator> = None;
-    let mut count_failure_input: Option<Operator> = None;
-    let mut subtract_failures_input = false;
+    let count_success_input: Option<Operator>;
+    let count_failure_input: Option<Operator>;
+    let subtract_failures_input: bool;
+
     let count_success_rule = count_success
         .map(|value| ("count_success", value))
         .or_else(|| count_failure.map(|value| ("count_failure", value)))
         .or_else(|| subtract_failures.map(|value| ("subtract_failure", value)))
-        .or_else(|| Some(("none", "none".parse().unwrap())));
-    match count_success_rule {
-        None => {}
-        Some((rule, value)) => {
-            if rule == "count_success" {
-                count_success_input = parse_operator(&value)
-            } else if rule == "count_failure" {
-                count_failure_input = parse_operator(&value)
-            } else if rule == "subtract_failure" {
-                count_failure_input = parse_operator(&value);
-                subtract_failures_input = true;
-            } else if rule == "none" {
-            } else {
-                unreachable!();
-            }
+        .or_else(|| None);
+
+    if let Some((rule, value)) = count_success_rule {
+        if rule == "count_success" {
+            count_success_input = parse_operator(&value);
+            count_failure_input = None;
+            subtract_failures_input = false;
+        } else if rule == "count_failure" {
+            count_success_input = None;
+            count_failure_input = parse_operator(&value);
+            subtract_failures_input = false;
+        } else {
+            count_success_input = None;
+            count_failure_input = parse_operator(&value);
+            subtract_failures_input = true;
         }
+    } else {
+        count_success_input = None;
+        count_failure_input = None;
+        subtract_failures_input = false;
     }
 
     let even_input = match even {
