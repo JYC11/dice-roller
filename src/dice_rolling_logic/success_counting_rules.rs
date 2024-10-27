@@ -225,9 +225,9 @@ impl VerboseTableDisplay for SuccessCountingRulesApplied {
 
         let mut success = None;
         match (self.success, self.failure) {
-            (Some(true), Some(false)) => { success = Some("true") }
-            (Some(false), Some(true)) => { success = Some("false") }
-            (_,_) => {}
+            (Some(true), Some(false)) => success = Some("true"),
+            (Some(false), Some(true)) => success = Some("false"),
+            (_, _) => {}
         }
 
         let mut header = vec![
@@ -273,7 +273,6 @@ impl VerboseTableDisplay for SuccessCountingRulesApplied {
             header.push(Cell::new("Success"));
             row.push(Cell::new(target));
         }
-
 
         if self.deductions > 0 {
             header.push(Cell::new("Deductions from final roll"));

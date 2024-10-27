@@ -25,7 +25,10 @@ pub fn build_dice_roll_commands(
 ) -> (Vec<DiceRollCommand>, i32) {
     let re_roll_number: u32;
     let re_roll_input = match re_roll {
-        None => { re_roll_number = 0; None },
+        None => {
+            re_roll_number = 0;
+            None
+        }
         Some(input) => {
             re_roll_number = parse_number(&input);
             parse_operator(&input)
@@ -36,7 +39,10 @@ pub fn build_dice_roll_commands(
 
     let explode_number: u32;
     let explode_input = match explode {
-        None => { explode_number = 0; None },
+        None => {
+            explode_number = 0;
+            None
+        }
         Some(input) => {
             explode_number = parse_number(&input);
             parse_operator(&input)
