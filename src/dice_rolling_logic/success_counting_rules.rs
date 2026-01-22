@@ -286,3 +286,233 @@ impl VerboseTableDisplay for SuccessCountingRulesApplied {
         println!("{table1}");
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::dice_rolling_logic::result_keeping_rules::ResultKeepingRulesApplied;
+
+    fn mock_kept_roll(
+        roll_number: u32,
+        final_roll: u32,
+        kept: bool,
+    ) -> ResultKeepingRulesApplied {
+        ResultKeepingRulesApplied::new(
+            1,               // group
+            1,               // sign
+            roll_number,
+            6,               // dice_size
+            final_roll,
+            vec![],          // discarded
+            vec![],          // exploded
+            final_roll as i32, // subtotal
+            kept,
+            None,            // replaced_roll
+        )
+    }
+
+    #[test]
+    fn test_count_success_gte_5() {
+        let mut rolls = vec![
+            mock_kept_roll(1, 6, true),
+            mock_kept_roll(2, 4, true),
+            mock_kept_roll(3, 5, true),
+            mock_kept_roll(4, 3, false), // not kept → ignored
+        ];
+
+        let rules = SuccessCountingRules::new(
+            Some(Operator::Gte(5)), // success if >=5
+            None,
+            false,
+            false,
+            None,
+            false,
+            0,
+        );
+
+        let result = rules.count_successes(&mut rolls, 0);
+        assert_eq!(result.successes, 2); // 6 and 5
+        assert_eq!(result.failures, 1);  // 4 is <5 → failure
+        assert_eq!(result.evens, 0);
+        assert_eq!(result.odds, 0);
+    }
+
+    #[test]
+    fn test_count_failure_lte_2() {
+        let mut rolls = vec![
+            mock_kept_roll(1, 1, true),
+            mock_kept_roll(2, 3, true),
+            mock_kept_roll(3, 2, true),
+            mock_kept_roll(4, 6, false), // not kept
+        ];
+
+        let rules = SuccessCountingRules::new(
+            None,
+            Some(Operator::Lte(2)), // failure if <=2
+            false,
+            false,
+            None,
+            false,
+            0,
+        );
+
+        let result = rules.count_successes(&mut rolls, 0);
+        assert_eq!(result.failures, 2); // 1 and 2
+        assert_eq!(result.successes, 1); // 3 is >2 → success
+    }
+
+    #[test]
+    fn test_count_even_and_odd() {
+        let mut rolls = vec![
+            mock_kept_roll(1, 2, true), // even
+            mock_kept_roll(2, 3, true), // odd
+            mock_kept_roll(3, 4, true), // even
+            mock_kept_roll(4, 5, false), // not kept
+        ];
+
+        let rules = SuccessCountingRules::new(
+            None,
+            None,
+            true,  // count even
+            true,  // count odd
+            None,
+            false,
+            0,
+        );
+
+        let result = rules.count_successes(&mut rolls, 0);
+        assert_eq!(result.evens, 2); // 2,4
+        assert_eq!(result.odds, 1);  // 3
+        assert_eq!(result.successes, 0);
+        assert_eq!(result.failures, 0);
+    }
+
+    #[test]
+    fn test_deduct_per_failure() {
+        let mut rolls = vec![
+            mock_kept_roll(1, 1, true), // failure (if success = >=5)
+            mock_kept_roll(2, 6, true), // success
+            mock_kept_roll(3, 3, true), // failure
+        ];
+
+        let rules = SuccessCountingRules::new(
+            Some(Operator::Gte(5)),
+            None,
+            false,
+            false,
+            Some(2), // deduct 2 per failure
+            false,
+            0,
+        );
+
+        let result = rules.count_successes(&mut rolls, 0);
+        assert_eq!(result.successes, 1);
+        assert_eq!(result.failures, 2);
+        assert_eq!(result.deductions_from_failure, 4); // 2 failures × 2
+        assert_eq!(result.subtractions_from_failure, 0);
+    }
+
+    #[test]
+    fn test_subtract_entire_roll_on_failure() {
+        let mut rolls = vec![
+            mock_kept_roll(1, 1, true), // failure → subtract 1
+            mock_kept_roll(2, 6, true), // success → no subtract
+            mock_kept_roll(3, 3, true), // failure → subtract 3
+        ];
+
+        let rules = SuccessCountingRules::new(
+            Some(Operator::Gte(5)),
+            None,
+            false,
+            false,
+            None,
+            true, // subtract entire roll on failure
+            0,
+        );
+
+        let result = rules.count_successes(&mut rolls, 0);
+        assert_eq!(result.subtractions_from_failure, 1 + 3); // 4
+        assert_eq!(result.deductions_from_failure, 0);
+    }
+
+    #[test]
+    fn test_only_kept_rolls_counted() {
+        let mut rolls = vec![
+            mock_kept_roll(1, 6, false), // not kept → should not count
+            mock_kept_roll(2, 2, true),  // kept, but failure
+        ];
+
+        let rules = SuccessCountingRules::new(
+            Some(Operator::Gte(5)),
+            None,
+            false,
+            false,
+            None,
+            false,
+            0,
+        );
+
+        let result = rules.count_successes(&mut rolls, 0);
+        assert_eq!(result.successes, 0);
+        assert_eq!(result.failures, 1); // only the kept 2
+    }
+
+    #[test]
+    fn test_no_rules_active() {
+        let mut rolls = vec![
+            mock_kept_roll(1, 4, true),
+            mock_kept_roll(2, 5, true),
+        ];
+
+        let rules = SuccessCountingRules::new(
+            None,
+            None,
+            false,
+            false,
+            None,
+            false,
+            0,
+        );
+
+        let result = rules.count_successes(&mut rolls, 0);
+        assert_eq!(result.successes, 0);
+        assert_eq!(result.failures, 0);
+        assert_eq!(result.evens, 0);
+        assert_eq!(result.odds, 0);
+        assert_eq!(result.deductions_from_failure, 0);
+        assert_eq!(result.subtractions_from_failure, 0);
+    }
+
+    #[test]
+    fn test_margin_and_modifier_passed_through() {
+        let mut rolls = vec![mock_kept_roll(1, 6, true)];
+
+        let rules = SuccessCountingRules::new(
+            Some(Operator::Gte(5)),
+            None,
+            false,
+            false,
+            None,
+            false,
+            10, // margin_of_success = 10
+        );
+
+        let result = rules.count_successes(&mut rolls, -2); // modifier = -2
+        assert_eq!(result.margin_of_success, 10);
+        assert_eq!(result.initial_modifier, -2);
+    }
+
+    #[test]
+    #[should_panic(expected = "assertion failed")]
+    fn test_cannot_have_both_success_and_failure_rules() {
+        SuccessCountingRules::new(
+            Some(Operator::Gte(5)),
+            Some(Operator::Lte(2)),
+            false,
+            false,
+            None,
+            false,
+            0,
+        );
+    }
+}

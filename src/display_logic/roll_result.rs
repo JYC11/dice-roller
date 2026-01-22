@@ -6,21 +6,21 @@ use std::collections::HashMap;
 
 #[derive(Clone)]
 pub struct SuccessCountingAfterResultKeeping {
-    rolls: Vec<SuccessCountingRulesApplied>,
-    deductions_from_failure: u32,
-    subtractions_from_failure: u32,
-    margin_of_success: u32,
-    initial_modifier: i32,
-    final_modifier: i32,
-    grouped_subtotals: HashMap<i32, i32>,
-    total_before_modifier: i32,
-    total: i32,
-    doubled: i32,
-    halved: f32,
-    successes: u32,
-    failures: u32,
-    evens: u32,
-    odds: u32,
+    pub rolls: Vec<SuccessCountingRulesApplied>,
+    pub deductions_from_failure: u32,
+    pub subtractions_from_failure: u32,
+    pub margin_of_success: u32,
+    pub initial_modifier: i32,
+    pub final_modifier: i32,
+    pub grouped_subtotals: HashMap<i32, i32>,
+    pub total_before_modifier: i32,
+    pub total: i32,
+    pub doubled: i32,
+    pub halved: f32,
+    pub(crate) successes: u32,
+    pub failures: u32,
+    pub evens: u32,
+    pub odds: u32,
 }
 
 impl SuccessCountingAfterResultKeeping {
