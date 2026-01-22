@@ -1,4 +1,5 @@
 #[derive(Clone, Copy, Debug)]
+#[derive(PartialEq)]
 pub enum Operator {
     Eq(u32),
     Gt(u32),

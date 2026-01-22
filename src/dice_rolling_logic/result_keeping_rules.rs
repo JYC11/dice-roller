@@ -2,11 +2,11 @@ use crate::dice_rolling_logic::roll_command::InitialDiceRollResult;
 
 #[derive(Copy, Clone)]
 pub struct ResultKeepingRules {
-    keep: bool,
-    high: bool,
-    keep_or_drop_count: u32,
-    be_replaced_with: Option<u32>,
-    min: bool,
+    pub keep: bool,
+    pub high: bool,
+    pub keep_or_drop_count: u32,
+    pub be_replaced_with: Option<u32>,
+    pub min: bool,
 }
 
 // keep = true, high = true -> keep the highest n roll(s)

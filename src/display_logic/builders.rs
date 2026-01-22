@@ -241,3 +241,279 @@ pub fn build_success_counting_rules(
         margin_of_success.unwrap_or(0u32),
     )
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::enums::Operator;
+
+    // --- parse_dice tests ---
+
+    #[test]
+    fn test_parse_dice_simple() {
+        assert_eq!(parse_dice("1d6"), (1, 6));
+        assert_eq!(parse_dice("10d20"), (10, 20));
+    }
+
+    #[test]
+    fn test_parse_dice_large_numbers() {
+        assert_eq!(parse_dice("100d1000"), (100, 1000));
+    }
+
+    #[test]
+    #[should_panic] // Regex unwrap will panic on non-matching strings if not handled gracefully
+    fn test_parse_dice_invalid_format() {
+        // The regex expects digits 'd' digits.
+        parse_dice("1d");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_parse_dice_no_d() {
+        parse_dice("6");
+    }
+
+    // --- build_dice_roll_commands tests ---
+
+    #[test]
+    fn test_build_dice_roll_commands_single_group_no_mods() {
+        let (commands, modifier) = build_dice_roll_commands(
+            "1d6".to_string(),
+            None, None, None, None
+        );
+        assert_eq!(modifier, 0);
+        assert_eq!(commands.len(), 1);
+        assert_eq!(commands[0].dice_count, 1);
+        assert_eq!(commands[0].dice_size, 6);
+        assert_eq!(commands[0].sign, 1);
+        assert_eq!(commands[0].group, 1);
+    }
+
+    #[test]
+    fn test_build_dice_roll_commands_single_group_with_modifier() {
+        let (commands, modifier) = build_dice_roll_commands(
+            "2d10+5".to_string(),
+            None, None, None, None
+        );
+        assert_eq!(modifier, 5);
+        assert_eq!(commands.len(), 1);
+        assert_eq!(commands[0].dice_count, 2);
+        assert_eq!(commands[0].dice_size, 10);
+    }
+
+    #[test]
+    fn test_build_dice_roll_commands_negative_group_and_mod() {
+        // "-2d6-3"
+        let (commands, modifier) = build_dice_roll_commands(
+            "-2d6-3".to_string(),
+            None, None, None, None
+        );
+        assert_eq!(modifier, -3);
+        assert_eq!(commands.len(), 1);
+        assert_eq!(commands[0].sign, -1);
+        assert_eq!(commands[0].dice_count, 2);
+    }
+
+    #[test]
+    fn test_build_dice_roll_commands_multiple_groups() {
+        // "1d6 + 2d4"
+        let (commands, modifier) = build_dice_roll_commands(
+            "1d6+2d4".to_string(),
+            None, None, None, None
+        );
+        assert_eq!(modifier, 0);
+        assert_eq!(commands.len(), 2);
+
+        // Group 1
+        assert_eq!(commands[0].dice_count, 1);
+        assert_eq!(commands[0].dice_size, 6);
+        assert_eq!(commands[0].group, 1);
+
+        // Group 2
+        assert_eq!(commands[1].dice_count, 2);
+        assert_eq!(commands[1].dice_size, 4);
+        assert_eq!(commands[1].group, 2);
+    }
+
+    #[test]
+    fn test_build_dice_roll_commands_options_propagation() {
+        let (commands, _) = build_dice_roll_commands(
+            "1d20".to_string(),
+            Some("lt5".to_string()),  // re_roll
+            Some("y".to_string()),    // re_roll_recursively
+            Some("eq20".to_string()), // explode
+            Some("n".to_string()),    // explode_once
+        );
+
+        let cmd = &commands[0];
+        match cmd.re_roll {
+            Some(Operator::Lt(5)) => {},
+            _ => panic!("Expected Lt(5)"),
+        }
+        assert_eq!(cmd.re_roll_recursively, true);
+
+        match cmd.explode {
+            Some(Operator::Eq(20)) => {},
+            _ => panic!("Expected Eq(20)"),
+        }
+        assert_eq!(cmd.explode_once, false);
+    }
+
+    #[test]
+    #[should_panic(expected = "re-roll number exceeds maximum dice size")]
+    fn test_panic_reroll_exceeds_sides() {
+        build_dice_roll_commands(
+            "1d6".to_string(),
+            Some("gt7".to_string()),
+            None, None, None
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "explode number exceeds maximum dice size")]
+    fn test_panic_explode_exceeds_sides() {
+        build_dice_roll_commands(
+            "1d6".to_string(),
+            None, None,
+            Some("eq7".to_string()),
+            None
+        );
+    }
+
+    // --- build_result_keeping_rules tests ---
+
+    #[test]
+    fn test_build_result_keeping_rules_keep_high() {
+        let rules = build_result_keeping_rules(Some(3), None, None, None, None, None);
+        assert_eq!(rules.keep, true);
+        assert_eq!(rules.high, true);
+        assert_eq!(rules.keep_or_drop_count, 3);
+    }
+
+    #[test]
+    fn test_build_result_keeping_rules_keep_low() {
+        let rules = build_result_keeping_rules(None, Some(2), None, None, None, None);
+        assert_eq!(rules.keep, true);
+        assert_eq!(rules.high, false); // keep low
+        assert_eq!(rules.keep_or_drop_count, 2);
+    }
+
+    #[test]
+    fn test_build_result_keeping_rules_drop_high() {
+        let rules = build_result_keeping_rules(None, None, Some(1), None, None, None);
+        assert_eq!(rules.keep, false);
+        assert_eq!(rules.high, true); // drop high
+        assert_eq!(rules.keep_or_drop_count, 1);
+    }
+
+    #[test]
+    fn test_build_result_keeping_rules_drop_low() {
+        let rules = build_result_keeping_rules(None, None, None, Some(4), None, None);
+        assert_eq!(rules.keep, false);
+        assert_eq!(rules.high, false); // drop low
+        assert_eq!(rules.keep_or_drop_count, 4);
+    }
+
+    #[test]
+    fn test_build_result_keeping_rules_min() {
+        let rules = build_result_keeping_rules(None, None, None, None, None, Some(2));
+        assert_eq!(rules.min, true);
+        assert_eq!(rules.be_replaced_with, Some(2));
+    }
+
+    #[test]
+    fn test_build_result_keeping_rules_max() {
+        let rules = build_result_keeping_rules(None, None, None, None, Some(10), None);
+        assert_eq!(rules.min, false);
+        assert_eq!(rules.be_replaced_with, Some(10));
+    }
+
+    #[test]
+    #[should_panic(expected = "Only one of max or min can be used")]
+    fn test_build_result_keeping_rules_min_max_conflict() {
+        build_result_keeping_rules(None, None, None, None, Some(10), Some(5));
+    }
+
+    #[test]
+    #[should_panic(expected = "Only one of keep_high, keep_low, drop_high, drop_low can be used")]
+    fn test_build_result_keeping_rules_keep_drop_conflict() {
+        build_result_keeping_rules(Some(1), Some(1), None, None, None, None);
+    }
+
+    // --- build_success_counting_rules tests ---
+
+    #[test]
+    fn test_build_success_counting_rules_count_success() {
+        let rules = build_success_counting_rules(
+            Some("gt10".to_string()), None, None, None, None, None, None
+        );
+        match rules.count_success {
+            Some(Operator::Gt(10)) => {},
+            _ => panic!("Expected Gt(10)"),
+        }
+        assert!(rules.count_failure.is_none());
+    }
+
+    #[test]
+    fn test_build_success_counting_rules_count_failure() {
+        let rules = build_success_counting_rules(
+            None, Some("lte1".to_string()), None, None, None, None, None
+        );
+        match rules.count_failure {
+            Some(Operator::Lte(1)) => {},
+            _ => panic!("Expected Lte(1)"),
+        }
+        assert!(rules.count_success.is_none());
+    }
+
+    #[test]
+    fn test_build_success_counting_rules_subtract_failures() {
+        let rules = build_success_counting_rules(
+            None, None, None, None, None,
+            Some("lt2".to_string()),
+            None
+        );
+        match rules.count_failure {
+            Some(Operator::Lt(2)) => {},
+            _ => panic!("Expected Lt(2)"),
+        }
+        assert_eq!(rules.subtract_failure, true);
+        assert!(rules.count_success.is_none());
+    }
+
+    #[test]
+    fn test_build_success_counting_rules_even_odd() {
+        let rules = build_success_counting_rules(
+            None, None,
+            Some("y".to_string()), // even
+            Some("y".to_string()), // odd
+            None, None, None
+        );
+        assert_eq!(rules.count_even, true);
+        assert_eq!(rules.count_odd, true);
+    }
+
+    #[test]
+    fn test_build_success_counting_rules_margin_deduct() {
+        let rules = build_success_counting_rules(
+            Some("gt5".to_string()),
+            None, None, None,
+            Some(2), // deduct_failure
+            None,
+            Some(4)  // margin_of_success
+        );
+        assert_eq!(rules.deduct_failure, Some(2));
+        assert_eq!(rules.margin_of_success, 4);
+    }
+
+    #[test]
+    #[should_panic(expected = "Only one of count_success, subtract_failures or count_failure can be used")]
+    fn test_build_success_counting_rules_conflict() {
+        build_success_counting_rules(
+            Some("gt10".to_string()),
+            Some("lt1".to_string()),
+            None, None, None, None, None
+        );
+    }
+}

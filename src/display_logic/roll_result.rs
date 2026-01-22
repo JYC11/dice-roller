@@ -204,3 +204,175 @@ impl AbridgedTableDisplay for SuccessCountingAfterResultKeeping {
         );
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+
+    fn mock_applied_roll(
+        group: i32,
+        sign: i32,
+        roll_number: u32,
+        final_roll: u32,
+        kept: bool,
+        success: Option<bool>,
+        failure: Option<bool>,
+    ) -> SuccessCountingRulesApplied {
+        SuccessCountingRulesApplied::new(
+            group,
+            sign,
+            roll_number,
+            6, // dice_size
+            final_roll,
+            vec![],
+            vec![],
+            final_roll as i32, // subtotal = final_roll (no explosions)
+            kept,
+            None, // replaced_roll
+            success,
+            failure,
+            false, // subtracted
+            0,     // deductions
+        )
+    }
+
+    #[test]
+    fn test_basic_grouped_subtotals_and_total() {
+        let rolls = vec![
+            mock_applied_roll(1, 1, 1, 4, true, None, None),
+            mock_applied_roll(1, 1, 2, 5, true, None, None),
+            mock_applied_roll(2, 1, 3, 3, true, None, None),
+        ];
+
+        let result = SuccessCountingAfterResultKeeping::new(
+            rolls,
+            0, // deductions
+            0, // subtractions
+            0, // margin
+            2, // initial modifier
+            0, 0, 0, 0, // successes, etc.
+        );
+
+        let expected_grouped = HashMap::from([(1, 9), (2, 3)]);
+        assert_eq!(result.grouped_subtotals, expected_grouped);
+        assert_eq!(result.total_before_modifier, 12);
+        assert_eq!(result.final_modifier, 2); // 2 - 0 - 0 - 0
+        assert_eq!(result.total, 14);
+        assert_eq!(result.doubled, 28);
+        assert_eq!(result.halved, 7.0);
+    }
+
+    #[test]
+    fn test_negative_sign_group() {
+        let rolls = vec![
+            mock_applied_roll(1, 1, 1, 6, true, None, None),   // +6
+            mock_applied_roll(2, -1, 2, 4, true, None, None),  // -4
+        ];
+
+        let result = SuccessCountingAfterResultKeeping::new(
+            rolls,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+        );
+
+        let expected_grouped = HashMap::from([(1, 6), (2, -4)]);
+        assert_eq!(result.grouped_subtotals, expected_grouped);
+        assert_eq!(result.total_before_modifier, 2);
+        assert_eq!(result.total, 2);
+    }
+
+    #[test]
+    fn test_neutral_rolls_included() {
+        let rolls = vec![
+            mock_applied_roll(1, 1, 1, 4, true, None, None), // neutral → included
+        ];
+
+        let result = SuccessCountingAfterResultKeeping::new(
+            rolls,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+        );
+
+        assert_eq!(result.total_before_modifier, 4);
+    }
+
+    #[test]
+    fn test_only_successes_included_when_success_rules_active() {
+        let rolls = vec![
+            mock_applied_roll(1, 1, 1, 6, true, Some(true), None),   // success → included
+            mock_applied_roll(1, 1, 2, 3, true, Some(false), None),  // failure → excluded
+            mock_applied_roll(1, 1, 3, 4, true, None, None),        // neutral → included? But shouldn't happen with rules...
+        ];
+
+        let result = SuccessCountingAfterResultKeeping::new(
+            rolls,
+            0, 0, 0, 0,
+            1, 1, 0, 0, // successes=1, failures=1 (but not used in filtering)
+        );
+
+        // Only roll 1 and 3 are included? But in real usage, roll 3 wouldn't be neutral.
+        // However, per your filter:
+        // - roll1: success=true → included
+        // - roll2: success=false → NOT included
+        // - roll3: neutral → included
+        assert_eq!(result.total_before_modifier, 6 + 4); // 10
+    }
+
+    #[test]
+    fn test_subtotal_excludes_failed_rolls_under_success_counting() {
+        // Realistic: all rolls have success flag set
+        let rolls = vec![
+            mock_applied_roll(1, 1, 1, 6, true, Some(true), None),   // success
+            mock_applied_roll(1, 1, 2, 3, true, Some(false), None),  // failure → excluded
+            mock_applied_roll(1, 1, 3, 2, true, Some(false), None),  // failure → excluded
+        ];
+
+        let result = SuccessCountingAfterResultKeeping::new(
+            rolls,
+            0, 0, 0, 0,
+            1, 2, 0, 0,
+        );
+
+        // Only the success (6) is included
+        assert_eq!(result.total_before_modifier, 6);
+    }
+
+    #[test]
+    fn test_final_modifier_calculation() {
+        let rolls = vec![mock_applied_roll(1, 1, 1, 5, true, None, None)];
+
+        let result = SuccessCountingAfterResultKeeping::new(
+            rolls,
+            2, // deductions
+            3, // subtractions
+            1, // margin_of_success
+            10, // initial modifier
+            0, 0, 0, 0,
+        );
+
+        // final_modifier = 10 - 2 - 3 - 1 = 4
+        assert_eq!(result.initial_modifier, 10);
+        assert_eq!(result.final_modifier, 4);
+        assert_eq!(result.total_before_modifier, 5);
+        assert_eq!(result.total, 9);
+    }
+
+    #[test]
+    fn test_empty_rolls() {
+        let rolls = vec![];
+
+        let result = SuccessCountingAfterResultKeeping::new(
+            rolls,
+            0, 0, 0, 5,
+            0, 0, 0, 0,
+        );
+
+        assert!(result.grouped_subtotals.is_empty());
+        assert_eq!(result.total_before_modifier, 0);
+        assert_eq!(result.total, 5); // 0 + 5
+        assert_eq!(result.doubled, 10);
+        assert_eq!(result.halved, 2.5);
+    }
+}

@@ -4,14 +4,14 @@ use crate::utils::apply_operator;
 
 #[derive(Copy, Clone, Debug)]
 pub struct DiceRollCommand {
-    group: i32,
-    sign: i32,
-    dice_count: u32,
-    dice_size: u32,
-    re_roll: Option<Operator>,
-    re_roll_recursively: bool,
-    explode: Option<Operator>,
-    explode_once: bool,
+    pub group: i32,
+    pub sign: i32,
+    pub dice_count: u32,
+    pub dice_size: u32,
+    pub re_roll: Option<Operator>,
+    pub re_roll_recursively: bool,
+    pub explode: Option<Operator>,
+    pub explode_once: bool,
 }
 
 impl DiceRollCommand {

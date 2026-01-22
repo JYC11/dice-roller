@@ -7,13 +7,13 @@ use comfy_table::{Cell, ContentArrangement, Table};
 
 #[derive(Copy, Clone)]
 pub struct SuccessCountingRules {
-    count_success: Option<Operator>,
-    count_failure: Option<Operator>,
-    count_even: bool,
-    count_odd: bool,
-    deduct_failure: Option<u32>, // deduct each by failure n
-    subtract_failure: bool,      // deduct the entire dice roll
-    margin_of_success: u32,
+    pub count_success: Option<Operator>,
+    pub count_failure: Option<Operator>,
+    pub count_even: bool,
+    pub count_odd: bool,
+    pub deduct_failure: Option<u32>, // deduct each by failure n
+    pub subtract_failure: bool,      // deduct the entire dice roll
+    pub margin_of_success: u32,
 }
 
 impl SuccessCountingRules {
