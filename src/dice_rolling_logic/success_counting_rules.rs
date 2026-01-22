@@ -1,5 +1,5 @@
 use crate::dice_rolling_logic::result_keeping_rules::ResultKeepingRulesApplied;
-use crate::display_logic::roll_result::SuccessCountingAfterResultKeeping;
+use crate::dice_rolling_logic::roll_result::SuccessCountingAfterResultKeeping;
 use crate::enums::Operator;
 use crate::utils::{apply_operator, VerboseTableDisplay};
 use comfy_table::presets::UTF8_FULL;
